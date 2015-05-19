@@ -27,7 +27,7 @@ function firstExample() {
 	var patrollingModel = {};
 
 	patrollingModel.ifPlayerIsInSight = function (actorInstance) {
-		var b = Math.random() > 0.2;
+		var b = Math.random() > 0.5;
 		writeOnConsole("see player? " + (b ? "yes" : "no"));
 		return  b;
 	};
@@ -64,11 +64,11 @@ function firstExample() {
 	var patrollingGuardBehaviourTree = new
 		//shoot or other
 			SelectorNode(
-			patrollingModel.ifPlayerIsInSight,
+			new ActionNode(patrollingModel.ifPlayerIsInSight),
 			//always shoot twice
-			new SequencerNode([patrollingModel.actionShootAtPlayer, patrollingModel.actionShootAtPlayer]),
+			new SequencerNode([new ActionNode(patrollingModel.actionShootAtPlayer), new ActionNode(patrollingModel.actionShootAtPlayer)]),
 			//cover or patrol
-			new SelectorNode(patrollingModel.ifUnderFire, patrollingModel.actionTakeCover, patrollingModel.actionWalkBackAndForthGuardingDoorway)
+			new SelectorNode(new ActionNode(patrollingModel.ifUnderFire), new ActionNode(patrollingModel.actionTakeCover), new ActionNode(patrollingModel.actionWalkBackAndForthGuardingDoorway))
 	);
 
 
@@ -130,15 +130,16 @@ function secondExample() {
      *  This is the key point: define your instance of behaviour tree. Here you can play and make it more complex.
      */
 	var kidInsightAction = new SelectorNode(
-			policemanModel.ifIsKidInControl,
-			policemanModel.actionBringChildToStation,
-			new SelectorRandomNode([policemanModel.actionBringChildHome, policemanModel.actionSmoke]));
+        new ActionNode(policemanModel.ifIsKidInControl),
+            new ActionNode(policemanModel.actionBringChildToStation),
+			new SelectorRandomNode([new ActionNode(policemanModel.actionBringChildHome), new ActionNode(policemanModel.actionSmoke)]));
 
 	var patrollingPoliceBehaviourTree = new
-			SelectorNode(policemanModel.ifKidInSight,
-			kidInsightAction,
-			policemanModel.actionWanderAround
-	);
+			SelectorNode(
+                new ActionNode(policemanModel.ifKidInSight),
+                kidInsightAction,
+                new ActionNode(policemanModel.actionWanderAround)
+                );
     // Behaviour Tree Instance END
 
     var socialSecurityWorkerModel = {};
@@ -154,8 +155,6 @@ function secondExample() {
 	socialSecurityWorkerModel.ifKidInSight = function (actorInstance) {
 		if (totalKidsWondering > 0) {
 			var b = Math.random() > 0.5 ? 0 : Math.random() > 0.7 ? 1 : 2;
-
-			myConsole.append =
 			writeOnConsole(actorInstance.name+": "+"see kid? " + b);
 			return  b;
 		} else {
@@ -197,11 +196,14 @@ function secondExample() {
      *  This is the key point: define your instance of behaviour tree. Here you can play and make it more complex.
      */
 	var socialSecurityKidInsightAction = new SelectorNode(
-			socialSecurityWorkerModel.ifIsKidInControl,
-			socialSecurityWorkerModel.actionBringChildHome,
-			new SelectorRandomNode([socialSecurityWorkerModel.actionChatWithKid, socialSecurityWorkerModel.actionLazyAround]));
+        new ActionNode(socialSecurityWorkerModel.ifIsKidInControl),
+        new ActionNode(socialSecurityWorkerModel.actionBringChildHome),
+		new SelectorRandomNode([new ActionNode(socialSecurityWorkerModel.actionChatWithKid), new ActionNode(socialSecurityWorkerModel.actionLazyAround)])
+    );
 
-	var socialWorkerBehaviourTree = new SelectorArrayNode(socialSecurityWorkerModel.ifKidInSight,[socialSecurityKidInsightAction, socialSecurityWorkerModel.actionWanderAround, socialSecurityWorkerModel.actionLazyAround]);
+	var socialWorkerBehaviourTree = new SelectorArrayNode(
+        new ActionNode(socialSecurityWorkerModel.ifKidInSight),
+        [socialSecurityKidInsightAction, new ActionNode(socialSecurityWorkerModel.actionWanderAround), new ActionNode(socialSecurityWorkerModel.actionLazyAround)]);
     // Behaviour Tree Instance END
 
     /**

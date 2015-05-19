@@ -8,31 +8,49 @@
  *
  */
 
+// Action model and implementation - BEGIN
+/**
+ * This simply creates a wrapper node for any specific action.
+ * The wrapper is necessary in order to have a uniform "execute"
+ * method to be called by the engine.
+ */
+function ActionNode(action) {
+    this.action = action;
+
+    this.execute = function(actorInstance) {
+        return action(actorInstance);
+    }
+}
+// Action model and implementation - END
+
+
+
 // selector model and implementation - BEGIN
 /**
  * This models the "selector" behaviour on two alternative conditions
  * You use this function in configuring your actor behaviour.
  */
 function SelectorNode(conditionFunction, actionIfTrue, actionIfFalse) {
+
     this.conditionFunction = conditionFunction;
     this.actionIfTrue = actionIfTrue;
     this.actionIfFalse = actionIfFalse;
-}
 
-/**
- * This makes a given SelectorNode instance execute.
- * This function is used by the engine executeBehaviourTreeWithTick
- * when a node of type SelectorNode is met
- */
-function selector(selectorNode, actorInstance) {
+    /**
+     * This makes a given SelectorNode instance execute.
+     * This function is used by the engine executeBehaviourTreeWithTick
+     * when a node of type SelectorNode is met
+     */
+    this.execute = function(actorInstance) {
 
-    if (executeBehaviourTreeWithTick(selectorNode.conditionFunction, actorInstance)) {
+        if (executeBehaviourTreeWithTick(conditionFunction, actorInstance)) {
 
-        executeBehaviourTreeWithTick(selectorNode.actionIfTrue, actorInstance);
+            executeBehaviourTreeWithTick(actionIfTrue, actorInstance);
 
-    } else {
+        } else {
 
-        executeBehaviourTreeWithTick(selectorNode.actionIfFalse, actorInstance);
+            executeBehaviourTreeWithTick(actionIfFalse, actorInstance);
+        }
     }
 }
 // selector model and implementation - END
@@ -45,12 +63,13 @@ function selector(selectorNode, actorInstance) {
  * This allows to compact a set of nested conditions in a more readable one.
  */
 function SelectorArrayNode(conditionFunction, actionArray) {
+
     this.conditionFunction = conditionFunction;
     this.actionArray = actionArray;
-}
 
-function selectorArray(selectorArrayNode, actorInstance) {
-    executeBehaviourTreeWithTick(selectorArrayNode.actionArray[executeBehaviourTreeWithTick(selectorArrayNode.conditionFunction, actorInstance)], actorInstance);
+    this.execute = function(actorInstance) {
+        executeBehaviourTreeWithTick(actionArray[executeBehaviourTreeWithTick(conditionFunction, actorInstance)], actorInstance);
+    }
 }
 // SelectorArray model and implementation - END
 
@@ -58,13 +77,14 @@ function selectorArray(selectorArrayNode, actorInstance) {
 
 // Sequencer model and implementation - BEGIN
 function SequencerNode(actionArray) {
+
     this.actionArray = actionArray;
-}
 
-function sequencer(sequencerNode, actorInstance) {
-    for (i = 0; i < sequencerNode.actionArray.length; i++) {
+    this.execute = function(actorInstance) {
+        for (i = 0; i < actionArray.length; i++) {
 
-        executeBehaviourTreeWithTick(sequencerNode.actionArray[i], actorInstance);
+            executeBehaviourTreeWithTick(actionArray[i], actorInstance);
+        }
     }
 }
 // Sequencer model and implementation - END
@@ -73,14 +93,13 @@ function sequencer(sequencerNode, actorInstance) {
 
 // SelectorRandom model and implementation - BEGIN
 function SelectorRandomNode(actionArray) {
+
     this.actionArray = actionArray;
-}
 
-function selectorRandom(selectorRandomNode, actorInstance) {
-
-    var randomIndex = Math.floor(Math.random() * selectorRandomNode.actionArray.length);
-
-    executeBehaviourTreeWithTick(selectorRandomNode.actionArray[randomIndex], actorInstance);
+    this.execute = function(actorInstance) {
+        var randomIndex = Math.floor(Math.random() * actionArray.length);
+        executeBehaviourTreeWithTick(actionArray[randomIndex], actorInstance);
+    }
 }
 // SelectorRandom model and implementation - END
 
@@ -88,15 +107,15 @@ function selectorRandom(selectorRandomNode, actorInstance) {
 
 // SequencerRandom model and implementation - BEGIN
 function SequencerRandomNode(actionArray) {
+
     this.actionArray = actionArray;
-}
 
-function sequencerRandom(sequencerRandomNode, actorInstance) {
+    this.execute = function(actorInstance) {
+        shuffle(actionArray);
+        for (i = 0; i < actionArray.length; i++) {
 
-    shuffle(sequencerRandomNode.actionArray);
-    for (i = 0; i < sequencerRandomNode.actionArray.length; i++) {
-
-        executeBehaviourTreeWithTick(sequencerRandomNode.actionArray[i], actorInstance);
+            executeBehaviourTreeWithTick(actionArray[i], actorInstance);
+        }
     }
 }
 // SequencerRandom model and implementation - END
@@ -111,24 +130,7 @@ function executeBehaviourTreeWithTick(behaviourTreeNode, actor) {
 
     if (actor.completedCurrentAction === undefined || actor.completedCurrentAction === true) {
 
-        if (Object.getPrototypeOf(behaviourTreeNode) === SelectorNode.prototype) {
-            selector(behaviourTreeNode, actor);
-
-        } else if (Object.getPrototypeOf(behaviourTreeNode) === SequencerNode.prototype)  {
-            sequencer(behaviourTreeNode, actor);
-
-        } else if (Object.getPrototypeOf(behaviourTreeNode) === SequencerRandomNode.prototype)  {
-            sequencerRandom(behaviourTreeNode, actor);
-
-        } else if (Object.getPrototypeOf(behaviourTreeNode) === SelectorRandomNode.prototype)  {
-            selectorRandom(behaviourTreeNode, actor);
-
-        } else if (Object.getPrototypeOf(behaviourTreeNode) === SelectorArrayNode.prototype)  {
-            selectorArray(behaviourTreeNode, actor);
-
-        } else {
-            return behaviourTreeNode(actor);
-        }
+            return behaviourTreeNode.execute(actor);
     }
 }
 

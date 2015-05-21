@@ -15,11 +15,11 @@
  * method to be called by the engine.
  */
 function ActionNode(action) {
-    this.action = action;
+	this.action = action;
 
-    this.execute = function(behaviourTreeInstanceState) {
-        return action(behaviourTreeInstanceState.actor);
-    }
+	this.execute = function(behaviourTreeInstanceState) {
+		return action(behaviourTreeInstanceState.actor);
+	}
 }
 // Action model and implementation - END
 
@@ -32,26 +32,30 @@ function ActionNode(action) {
  */
 function SelectorNode(conditionFunction, actionIfTrue, actionIfFalse) {
 
-    this.conditionFunction = conditionFunction;
-    this.actionIfTrue = actionIfTrue;
-    this.actionIfFalse = actionIfFalse;
+	this.conditionFunction = conditionFunction;
+	this.actionIfTrue = actionIfTrue;
+	this.actionIfFalse = actionIfFalse;
 
-    /**
-     * This makes a given SelectorNode instance execute.
-     * This function is used by the engine executeBehaviourTreeWithTick
-     * when a node of type SelectorNode is met
-     */
-    this.execute = function(behaviourTreeInstanceState) {
+	/**
+	 * This makes a given SelectorNode instance execute.
+	 * This function is used by the engine executeBehaviourTreeWithTick
+	 * when a node of type SelectorNode is met
+	 */
+	this.execute = function(behaviourTreeInstanceState) {
 
-        if (executeBehaviourTreeWithTick(conditionFunction, behaviourTreeInstanceState.actor)) {
+		behaviourTreeInstanceState.currentNode = conditionFunction;
+		var result = executeBehaviourTreeWithTick(behaviourTreeInstanceState)
 
-            executeBehaviourTreeWithTick(actionIfTrue, behaviourTreeInstanceState.actor);
+		if (result) {
+			behaviourTreeInstanceState.currentNode = actionIfTrue;
+		} else {
+			behaviourTreeInstanceState.currentNode = actionIfFalse;
+		}
 
-        } else {
+		executeBehaviourTreeWithTick(behaviourTreeInstanceState);
 
-            executeBehaviourTreeWithTick(actionIfFalse, behaviourTreeInstanceState.actor);
-        }
-    }
+
+	}
 }
 // selector model and implementation - END
 
@@ -64,12 +68,14 @@ function SelectorNode(conditionFunction, actionIfTrue, actionIfFalse) {
  */
 function SelectorArrayNode(conditionFunction, actionArray) {
 
-    this.conditionFunction = conditionFunction;
-    this.actionArray = actionArray;
+	this.conditionFunction = conditionFunction;
+	this.actionArray = actionArray;
 
-    this.execute = function(behaviourTreeInstanceState) {
-        executeBehaviourTreeWithTick(actionArray[executeBehaviourTreeWithTick(behaviourTreeInstanceState)], behaviourTreeInstanceState.actor);
-    }
+	this.execute = function(behaviourTreeInstanceState) {
+
+		behaviourTreeInstanceState.currentNode = conditionFunction;
+		executeBehaviourTreeWithTick(actionArray[executeBehaviourTreeWithTick(behaviourTreeInstanceState)]);
+	}
 }
 // SelectorArray model and implementation - END
 
@@ -78,14 +84,15 @@ function SelectorArrayNode(conditionFunction, actionArray) {
 // Sequencer model and implementation - BEGIN
 function SequencerNode(actionArray) {
 
-    this.actionArray = actionArray;
+	this.actionArray = actionArray;
 
-    this.execute = function(behaviourTreeInstanceState) {
-        for (i = 0; i < actionArray.length; i++) {
+	this.execute = function(behaviourTreeInstanceState) {
+		for (var i = 0; i < actionArray.length; i++) {
 
-            executeBehaviourTreeWithTick(actionArray[i], behaviourTreeInstanceState.actor);
-        }
-    }
+			behaviourTreeInstanceState.currentNode = actionArray[i];
+			executeBehaviourTreeWithTick(behaviourTreeInstanceState);
+		}
+	}
 }
 // Sequencer model and implementation - END
 
@@ -94,12 +101,14 @@ function SequencerNode(actionArray) {
 // SelectorRandom model and implementation - BEGIN
 function SelectorRandomNode(actionArray) {
 
-    this.actionArray = actionArray;
+	this.actionArray = actionArray;
 
-    this.execute = function(behaviourTreeInstanceState) {
-        var randomIndex = Math.floor(Math.random() * actionArray.length);
-        executeBehaviourTreeWithTick(actionArray[randomIndex], behaviourTreeInstanceState.actor);
-    }
+	this.execute = function(behaviourTreeInstanceState) {
+		var randomIndex = Math.floor(Math.random() * actionArray.length);
+		behaviourTreeInstanceState.currentNode = actionArray[randomIndex];
+
+		executeBehaviourTreeWithTick(behaviourTreeInstanceState);
+	}
 }
 // SelectorRandom model and implementation - END
 
@@ -108,24 +117,24 @@ function SelectorRandomNode(actionArray) {
 // SequencerRandom model and implementation - BEGIN
 function SequencerRandomNode(actionArray) {
 
-    this.actionArray = actionArray;
+	this.actionArray = actionArray;
 
-    this.execute = function(behaviourTreeInstanceState) {
-        shuffle(actionArray);
+	this.execute = function(behaviourTreeInstanceState) {
+		shuffle(actionArray);
 
-        for (i = 0; i < actionArray.length; i++) {
-
-            executeBehaviourTreeWithTick(actionArray[i], behaviourTreeInstanceState.actor);
-        }
-    }
+		for (i = 0; i < actionArray.length; i++) {
+			behaviourTreeInstanceState.currentNode = actionArray[i];
+			executeBehaviourTreeWithTick(behaviourTreeInstanceState);
+		}
+	}
 }
 // SequencerRandom model and implementation - END
 
 function BehaviourTreeInstanceState(behaviourTreeInstance, actor) {
 
-    this.behaviourTreeInstance = behaviourTreeInstance;
-    this.currentNode = behaviourTreeInstance;
-    this.actor = actor;
+	this.behaviourTreeInstance = behaviourTreeInstance;
+	this.currentNode = behaviourTreeInstance;
+	this.actor = actor;
 }
 
 /**
@@ -135,22 +144,24 @@ function BehaviourTreeInstanceState(behaviourTreeInstance, actor) {
  */
 function executeBehaviourTreeWithTick(behaviourTreeInstanceState) {
 
-    if (behaviourTreeInstanceState.actor.completedCurrentAction === undefined || behaviourTreeInstanceState.actor.completedCurrentAction === true) {
+	console.debug("executeBehaviourTreeWithTick   ",behaviourTreeInstanceState);
 
-            return behaviourTreeInstanceState.currentNode.execute(behaviourTreeInstanceState);
-    }
+	if (behaviourTreeInstanceState.actor.completedCurrentAction === undefined || behaviourTreeInstanceState.actor.completedCurrentAction === true) {
+
+		return behaviourTreeInstanceState.currentNode.execute(behaviourTreeInstanceState);
+	}
 }
 
 /**
  * This is what makes all your behaviour trees instances run
  */
 function tick(behaviourTreeInstanceState) {
-    console.debug("called tick ",behaviourTreeInstanceState);
-    executeBehaviourTreeWithTick(behaviourTreeInstanceState);
+	console.debug("called tick ",behaviourTreeInstanceState);
+	executeBehaviourTreeWithTick(behaviourTreeInstanceState);
 
-    /*setInterval(function () {
-        executeBehaviourTreeWithTick(behaviourTreeInstanceState);
-    }, 1000); */
+	/*setInterval(function () {
+	 executeBehaviourTreeWithTick(behaviourTreeInstanceState);
+	 }, 1000); */
 }
 
 
@@ -159,21 +170,21 @@ function tick(behaviourTreeInstanceState) {
  * From http://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
  */
 function shuffle(array) {
-    var currentIndex = array.length, temporaryValue, randomIndex ;
+	var currentIndex = array.length, temporaryValue, randomIndex ;
 
-    // While there remain elements to shuffle...
-    while (0 !== currentIndex) {
+	// While there remain elements to shuffle...
+	while (0 !== currentIndex) {
 
-        // Pick a remaining element...
-        randomIndex = Math.floor(Math.random() * currentIndex);
-        currentIndex -= 1;
+		// Pick a remaining element...
+		randomIndex = Math.floor(Math.random() * currentIndex);
+		currentIndex -= 1;
 
-        // And swap it with the current element.
-        temporaryValue = array[currentIndex];
-        array[currentIndex] = array[randomIndex];
-        array[randomIndex] = temporaryValue;
-    }
+		// And swap it with the current element.
+		temporaryValue = array[currentIndex];
+		array[currentIndex] = array[randomIndex];
+		array[randomIndex] = temporaryValue;
+	}
 
-    return array;
+	return array;
 }
 

@@ -24,30 +24,30 @@ function writeOnConsole(text){
 function firstExample() {
 
 
-	var patrollingModel = {};
+	var PatrollingGuardManager = {};
 
-	patrollingModel.ifPlayerIsInSight = function (actorInstance) {
+	PatrollingGuardManager.ifPlayerIsInSight = function (actorInstance) {
 		var b = Math.random() > 0.5;
 		writeOnConsole("see player? " + (b ? "yes" : "no"));
 		return  b;
 	};
 
-	patrollingModel.actionShootAtPlayer = function (actorInstance) {
+	PatrollingGuardManager.actionShootAtPlayer = function (actorInstance) {
 		writeOnConsole("bang!");
 	};
 
-	patrollingModel.ifUnderFire = function (actorInstance) {
+	PatrollingGuardManager.ifUnderFire = function (actorInstance) {
 		var b = Math.random() > 0.5;
 		writeOnConsole("under fire? " + (b ? "yes" : "no"));
 		return  b;
 	};
 
-	patrollingModel.actionTakeCover = function (actorInstance) {
+	PatrollingGuardManager.actionTakeCover = function (actorInstance) {
 		//actorInstance.inCover=true;
 		writeOnConsole("Took cover");
 	};
 
-	patrollingModel.actionWalkBackAndForthGuardingDoorway = function (actorInstance) {
+	PatrollingGuardManager.actionWalkBackAndForthGuardingDoorway = function (actorInstance) {
 		actorInstance.goingUp=!actorInstance.goingUp;
 		writeOnConsole("Patrolling " + (actorInstance.goingUp ? "north" : "south"));
 		actorInstance.completedCurrentAction = false;
@@ -64,11 +64,11 @@ function firstExample() {
 	var patrollingGuardBehaviourTree = new
 		//shoot or other
 			SelectorNode(
-			new ActionNode(patrollingModel.ifPlayerIsInSight),
+			new ActionNode(PatrollingGuardManager.ifPlayerIsInSight),
 			//always shoot twice
-			new SequencerNode([new ActionNode(patrollingModel.actionShootAtPlayer), new ActionNode(patrollingModel.actionShootAtPlayer)]),
+			new SequencerNode([new ActionNode(PatrollingGuardManager.actionShootAtPlayer), new ActionNode(PatrollingGuardManager.actionShootAtPlayer)]),
 			//cover or patrol
-			new SelectorNode(new ActionNode(patrollingModel.ifUnderFire), new ActionNode(patrollingModel.actionTakeCover), new ActionNode(patrollingModel.actionWalkBackAndForthGuardingDoorway))
+			new SelectorNode(new ActionNode(PatrollingGuardManager.ifUnderFire), new ActionNode(PatrollingGuardManager.actionTakeCover), new ActionNode(PatrollingGuardManager.actionWalkBackAndForthGuardingDoorway))
 	);
 
 
@@ -82,10 +82,10 @@ function secondExample() {
 
     var totalKidsWondering = 20;
 
-	var policemanModel = {};
-	policemanModel.name = "Bobby";
+	var PolicemanManager = {};
 
-	policemanModel.ifKidInSight = function (actorInstance) {
+
+	PolicemanManager.ifKidInSight = function (actorInstance) {
 		if (totalKidsWondering>0) {
 			writeOnConsole("total kids wandering: " + totalKidsWondering);
 			var b = Math.random() > 0.5;
@@ -97,31 +97,36 @@ function secondExample() {
 		}
 	};
 
-	policemanModel.ifIsKidInControl = function (actorInstance) {
+	PolicemanManager.ifIsKidInControl = function (actorInstance) {
 		var b = Math.random() > 0.5;
 		writeOnConsole(actorInstance.name+": "+"Hi kid, where do you live? " + (b ? "F**k you" : "Home"));
 		return  b;
 	};
 
-	policemanModel.actionBringChildToStation = function (actorInstance) {
+    PolicemanManager.runAferKid = function (actorInstance) {
+        actorInstance.completedCurrentAction = false;
+
+    }
+
+	PolicemanManager.actionBringChildToStation = function (actorInstance) {
 		totalKidsWondering--;
 		writeOnConsole(actorInstance.name+": "+"Bring child to station");
 	};
 
-	policemanModel.actionBringChildHome = function (actorInstance) {
+	PolicemanManager.actionBringChildHome = function (actorInstance) {
 		totalKidsWondering--;
 		writeOnConsole(actorInstance.name+": "+"Bring child home");
 	};
 
-	policemanModel.actionSmoke = function (actorInstance) {
+	PolicemanManager.actionSmoke = function (actorInstance) {
 		writeOnConsole(actorInstance.name+": "+"Smoke");
 	};
 
-	policemanModel.actionWanderAround = function (actorInstance) {
+	PolicemanManager.actionWanderAround = function (actorInstance) {
 		writeOnConsole(actorInstance.name+": "+"Wander around");
 	};
 
-	policemanModel.amOutside = function (actorInstance) {
+	PolicemanManager.amOutside = function (actorInstance) {
 		return actorInstance.isOutside;
 	};
 
@@ -130,19 +135,23 @@ function secondExample() {
      *  This is the key point: define your instance of behaviour tree. Here you can play and make it more complex.
      */
 	var kidInsightAction = new SelectorNode(
-        new ActionNode(policemanModel.ifIsKidInControl),
-            new ActionNode(policemanModel.actionBringChildToStation),
-			new SelectorRandomNode([new ActionNode(policemanModel.actionBringChildHome), new ActionNode(policemanModel.actionSmoke)]));
+        new ActionNode(PolicemanManager.ifIsKidInControl),
+            new ActionNode(PolicemanManager.actionBringChildToStation),
+			new SelectorRandomNode([new ActionNode(PolicemanManager.actionBringChildHome), new ActionNode(PolicemanManager.actionSmoke)]));
 
 	var patrollingPoliceBehaviourTree = new
 			SelectorNode(
-                new ActionNode(policemanModel.ifKidInSight),
+                new ActionNode(PolicemanManager.ifKidInSight),
                 kidInsightAction,
-                new ActionNode(policemanModel.actionWanderAround)
+                new ActionNode(PolicemanManager.actionWanderAround)
                 );
     // Behaviour Tree Instance END
 
-    var socialSecurityWorkerModel = {};
+
+    /**
+     * This "singleton" will handle all the actions of each SocialSecurityWorker instance
+     */
+    var SocialSecurityWorkerManager = {};
 
 
     /**
@@ -152,7 +161,7 @@ function secondExample() {
      * @param actorInstance
      * @returns {number} (index of array of nodes)
      */
-	socialSecurityWorkerModel.ifKidInSight = function (actorInstance) {
+	SocialSecurityWorkerManager.ifKidInSight = function (actorInstance) {
 		if (totalKidsWondering > 0) {
 			var b = Math.random() > 0.5 ? 0 : Math.random() > 0.7 ? 1 : 2;
 			writeOnConsole(actorInstance.name+": "+"see kid? " + b);
@@ -163,31 +172,31 @@ function secondExample() {
 		}
 	};
 
-	socialSecurityWorkerModel.ifIsKidInControl = function (actorInstance) {
+	SocialSecurityWorkerManager.ifIsKidInControl = function (actorInstance) {
 		var b = Math.random() > 0.5;
 		writeOnConsole(actorInstance.name+": "+"Hi kid, having a good time? " + (b ? "F**k you" : "OK"));
 		return  b;
 	};
 
-	socialSecurityWorkerModel.actionBringChildHome = function (actorInstance) {
+	SocialSecurityWorkerManager.actionBringChildHome = function (actorInstance) {
 		totalKidsWondering--;
 		writeOnConsole(actorInstance.name+": "+"Bring child home");
 
 	};
 
-	socialSecurityWorkerModel.actionChatWithKid = function (actorInstance) {
+	SocialSecurityWorkerManager.actionChatWithKid = function (actorInstance) {
 		writeOnConsole(actorInstance.name+": "+"How is school?");
 	};
 
-	socialSecurityWorkerModel.actionLazyAround = function (actorInstance) {
+	SocialSecurityWorkerManager.actionLazyAround = function (actorInstance) {
 		writeOnConsole(actorInstance.name+": "+"Smoke weed");
 	};
 
-	socialSecurityWorkerModel.actionWanderAround = function (actorInstance) {
+	SocialSecurityWorkerManager.actionWanderAround = function (actorInstance) {
 		writeOnConsole(actorInstance.name+": "+"Wander around");
 	};
 
-	socialSecurityWorkerModel.amOutside = function (actorInstance) {
+	SocialSecurityWorkerManager.amOutside = function (actorInstance) {
 		return actorInstance.isOutside;
 	};
 
@@ -196,14 +205,14 @@ function secondExample() {
      *  This is the key point: define your instance of behaviour tree. Here you can play and make it more complex.
      */
 	var socialSecurityKidInsightAction = new SelectorNode(
-        new ActionNode(socialSecurityWorkerModel.ifIsKidInControl),
-        new ActionNode(socialSecurityWorkerModel.actionBringChildHome),
-		new SelectorRandomNode([new ActionNode(socialSecurityWorkerModel.actionChatWithKid), new ActionNode(socialSecurityWorkerModel.actionLazyAround)])
+        new ActionNode(SocialSecurityWorkerManager.ifIsKidInControl),
+        new ActionNode(SocialSecurityWorkerManager.actionBringChildHome),
+		new SelectorRandomNode([new ActionNode(SocialSecurityWorkerManager.actionChatWithKid), new ActionNode(SocialSecurityWorkerManager.actionLazyAround)])
     );
 
 	var socialWorkerBehaviourTree = new SelectorArrayNode(
-        new ActionNode(socialSecurityWorkerModel.ifKidInSight),
-        [socialSecurityKidInsightAction, new ActionNode(socialSecurityWorkerModel.actionWanderAround), new ActionNode(socialSecurityWorkerModel.actionLazyAround)]);
+        new ActionNode(SocialSecurityWorkerManager.ifKidInSight),
+        [socialSecurityKidInsightAction, new ActionNode(SocialSecurityWorkerManager.actionWanderAround), new ActionNode(SocialSecurityWorkerManager.actionLazyAround)]);
     // Behaviour Tree Instance END
 
     /**
@@ -212,15 +221,19 @@ function secondExample() {
      */
     var policeman1 = {};
     policeman1.name = "Bobby";
-    tick(patrollingPoliceBehaviourTree, policeman1);
+    policeman1.completedCurrentAction = true;
 
-    var policeman2 = {};
+    var state = new BehaviourTreeInstanceState(patrollingPoliceBehaviourTree,policeman1);
+
+    tick(state);
+
+    /*var policeman2 = {};
     policeman2.name = "Jimmy";
     tick(patrollingPoliceBehaviourTree, policeman2);
 
 	var socialWorker1 = {};
 	socialWorker1.name = "Helping Dude";
-	tick(socialWorkerBehaviourTree, socialWorker1);
+	tick(socialWorkerBehaviourTree, socialWorker1);*/
 
 }
 

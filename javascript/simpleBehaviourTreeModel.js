@@ -16,6 +16,7 @@ function BehaviourTreeInstance(behaviourTree, actor) {
 	this.behaviorTree = behaviourTree;
 	this.actor = actor;
 	this.nodeAndState = [];
+	this.currentNode=null;
 
 	this.findStateForNode = function (node) {
 
@@ -25,6 +26,10 @@ function BehaviourTreeInstance(behaviourTree, actor) {
 		}
 	}
 
+	this.setState = function (state) {
+		this.nodeAndState.push([this.currentNode,state]);
+	}
+
 }
 BehaviourTreeInstance.STATE_TO_BE_STARTED = "STATE_TO_BE_STARTED";
 BehaviourTreeInstance.STATE_WAITING = "STATE_WAITING";
@@ -32,8 +37,6 @@ BehaviourTreeInstance.STATE_DISCARDED = "STATE_DISCARDED";
 BehaviourTreeInstance.STATE_EXECUTING = "STATE_EXECUTING";
 BehaviourTreeInstance.STATE_COMPUTE_RESULT = "STATE_COMPUTE_RESULT";
 BehaviourTreeInstance.STATE_COMPLETED = "STATE_COMPLETED";
-
-
 
 // Action model and implementation - BEGIN
 /**
@@ -45,7 +48,7 @@ function ActionNode(action) {
 	this.action = action;
 
 	this.execute = function(behaviourTreeInstanceState) {
-		return action(behaviourTreeInstanceState.actor);
+		return action(behaviourTreeInstanceState);
 	}
 
 	this.children = function(behaviourTreeInstanceState) {
@@ -75,16 +78,19 @@ function SelectorNode(conditionFunction, actionIfTrue, actionIfFalse) {
 	 */
 	this.execute = function(behaviourTreeInstanceState) {
 
-		behaviourTreeInstanceState.currentNode = conditionFunction;
-		var result = executeBehaviourTreeWithTick(behaviourTreeInstanceState)
+		//var result = executeBehaviourTree(behaviourTreeInstanceState)
+		var result = conditionFunction(behaviourTreeInstanceState.actor);
+		behaviourTreeInstanceState.nodeAndState.push([this,BehaviourTreeInstance.STATE_WAITING]);
 
 		if (result) {
-			behaviourTreeInstanceState.currentNode = actionIfTrue;
+			behaviourTreeInstanceState.nodeAndState.push([actionIfTrue,BehaviourTreeInstance.STATE_TO_BE_STARTED]);
+			behaviourTreeInstanceState.nodeAndState.push([actionIfFalse,BehaviourTreeInstance.STATE_DISCARDED]);
 		} else {
-			behaviourTreeInstanceState.currentNode = actionIfFalse;
+			behaviourTreeInstanceState.nodeAndState.push([actionIfTrue,BehaviourTreeInstance.STATE_DISCARDED]);
+			behaviourTreeInstanceState.nodeAndState.push([actionIfFalse,BehaviourTreeInstance.STATE_TO_BE_STARTED]);
 		}
 
-		executeBehaviourTreeWithTick(behaviourTreeInstanceState);
+
 	}
 
 	this.children = function() {
@@ -190,9 +196,9 @@ function SequencerRandomNode(actionArray) {
 function executeBehaviourTree(behaviourTreeInstance) {
 
 	//find current node to be executed, or a running one, or root to launch, or root completed
-	var node = findCurrentNode(behaviourTreeInstance,behaviourTreeInstance);
+	behaviourTreeInstance.currentNode = findCurrentNode(behaviourTreeInstance,behaviourTreeInstance);
 
-	var state = behaviourTreeInstance.findStateForNode(node);
+	var state = behaviourTreeInstance.findStateForNode(behaviourTreeInstance.currentNode);
 
 	if (state == BehaviourTreeInstance.STATE_EXECUTING)
 	 return;

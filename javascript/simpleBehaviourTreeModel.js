@@ -8,6 +8,33 @@
  *
  */
 
+/**
+ * This does nothing but we like to have a "root"
+ */
+function BehaviourTreeInstance(behaviourTree, actor) {
+
+	this.behaviorTree = behaviourTree;
+	this.actor = actor;
+	this.nodeAndState = [];
+
+	this.findStateForNode = function (node) {
+
+		for(var i = 0;i<this.nodeAndState.length;i++) {
+			if (this.nodeAndState[i][0]==node)
+			  return this.nodeAndState[i][1];
+		}
+	}
+
+}
+BehaviourTreeInstance.STATE_TO_BE_STARTED = "STATE_TO_BE_STARTED";
+BehaviourTreeInstance.STATE_WAITING = "STATE_WAITING";
+BehaviourTreeInstance.STATE_DISCARDED = "STATE_DISCARDED";
+BehaviourTreeInstance.STATE_EXECUTING = "STATE_EXECUTING";
+BehaviourTreeInstance.STATE_COMPUTE_RESULT = "STATE_COMPUTE_RESULT";
+BehaviourTreeInstance.STATE_COMPLETED = "STATE_COMPLETED";
+
+
+
 // Action model and implementation - BEGIN
 /**
  * This simply creates a wrapper node for any specific action.
@@ -20,7 +47,12 @@ function ActionNode(action) {
 	this.execute = function(behaviourTreeInstanceState) {
 		return action(behaviourTreeInstanceState.actor);
 	}
-}
+
+	this.children = function(behaviourTreeInstanceState) {
+		return null;
+	}
+
+	}
 // Action model and implementation - END
 
 
@@ -53,9 +85,12 @@ function SelectorNode(conditionFunction, actionIfTrue, actionIfFalse) {
 		}
 
 		executeBehaviourTreeWithTick(behaviourTreeInstanceState);
-
-
 	}
+
+	this.children = function() {
+		return [actionIfTrue,actionIfFalse];
+	}
+
 }
 // selector model and implementation - END
 
@@ -76,6 +111,11 @@ function SelectorArrayNode(conditionFunction, actionArray) {
 		behaviourTreeInstanceState.currentNode = conditionFunction;
 		executeBehaviourTreeWithTick(actionArray[executeBehaviourTreeWithTick(behaviourTreeInstanceState)]);
 	}
+
+	this.children = function() {
+		return actionArray;
+	}
+
 }
 // SelectorArray model and implementation - END
 
@@ -93,6 +133,10 @@ function SequencerNode(actionArray) {
 			executeBehaviourTreeWithTick(behaviourTreeInstanceState);
 		}
 	}
+
+	this.children = function() {
+		return actionArray;
+	}
 }
 // Sequencer model and implementation - END
 
@@ -109,6 +153,10 @@ function SelectorRandomNode(actionArray) {
 
 		executeBehaviourTreeWithTick(behaviourTreeInstanceState);
 	}
+
+	this.children = function() {
+		return actionArray;
+	}
 }
 // SelectorRandom model and implementation - END
 
@@ -122,42 +170,80 @@ function SequencerRandomNode(actionArray) {
 	this.execute = function(behaviourTreeInstanceState) {
 		shuffle(actionArray);
 
-		for (i = 0; i < actionArray.length; i++) {
+		for ( var i = 0; i < actionArray.length; i++) {
 			behaviourTreeInstanceState.currentNode = actionArray[i];
 			executeBehaviourTreeWithTick(behaviourTreeInstanceState);
 		}
 	}
+
+	this.children = function() {
+		return actionArray;
+	}
 }
 // SequencerRandom model and implementation - END
-
-function BehaviourTreeInstanceState(behaviourTreeInstance, actor) {
-
-	this.behaviourTreeInstance = behaviourTreeInstance;
-	this.currentNode = behaviourTreeInstance;
-	this.actor = actor;
-}
 
 /**
  * This is the function that crawls the behaviour tree instance you pass to it
  * and calls the executors if the the argument is a node of some kind,
  * calls it as an action otherwise.
  */
-function executeBehaviourTreeWithTick(behaviourTreeInstanceState) {
+function executeBehaviourTree(behaviourTreeInstance) {
 
-	console.debug("executeBehaviourTreeWithTick   ",behaviourTreeInstanceState);
+	//find current node to be executed, or a running one, or root to launch, or root completed
+	var node = findCurrentNode(behaviourTreeInstance,behaviourTreeInstance);
 
-	if (behaviourTreeInstanceState.actor.completedCurrentAction === undefined || behaviourTreeInstanceState.actor.completedCurrentAction === true) {
+	var state = behaviourTreeInstance.findStateForNode(node);
 
-		return behaviourTreeInstanceState.currentNode.execute(behaviourTreeInstanceState);
-	}
+	if (state == BehaviourTreeInstance.STATE_EXECUTING)
+	 return;
+
+	if (state == BehaviourTreeInstance.STATE_WAITING)
+		state = BehaviourTreeInstance.STATE_COMPUTE_RESULT;
+
+	if (state == BehaviourTreeInstance.STATE_TO_BE_STARTED)
+    node.start(behaviourTreeInstance);
+
+	if (state == BehaviourTreeInstance.STATE_COMPUTE_RESULT)
+		node.execute(behaviourTreeInstance);
+
 }
+
+function findCurrentNode(node, behaviourTreeInstance) {
+
+	var state = behaviourTreeInstance.findStateForNode(node);
+	if (state==null) {
+		behaviourTreeInstance.nodeAndState.push([node,BehaviourTreeInstance.STATE_TO_BE_STARTED]);
+		return node;
+	}
+
+	if (state == BehaviourTreeInstance.STATE_EXECUTING ||
+			state == BehaviourTreeInstance.STATE_COMPUTE_RESULT ||
+			state == BehaviourTreeInstance.STATE_TO_BE_STARTED
+			)
+		return node;
+
+	var children = node.children();
+	if (children==null)
+	  return node;
+	else {
+
+		for (var i = 0; i < children.length; i++) {
+			var childNode = findCurrentNode(children[i]);
+			if (childNode)
+			  return childNode;
+		}
+	}
+	return null;
+}
+
+
 
 /**
  * This is what makes all your behaviour trees instances run
  */
-function tick(behaviourTreeInstanceState) {
-	console.debug("called tick ",behaviourTreeInstanceState);
-	executeBehaviourTreeWithTick(behaviourTreeInstanceState);
+function tick(behaviourTreeInstance) {
+
+	executeBehaviourTree(behaviourTreeInstance);
 
 	/*setInterval(function () {
 	 executeBehaviourTreeWithTick(behaviourTreeInstanceState);

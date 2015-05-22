@@ -1,10 +1,10 @@
 /**
- * Created by Pietro Polsinelli on 15/05/2015.
+ * Created by Pietro Polsinelli && Matteo Bicocchi on 15/05/2015.
  *
  * Fisrt inspired by the simplicity of
  * http://stackoverflow.com/questions/4241824/creating-an-ai-behavior-tree-in-c-sharp-how
  *
- * Follow me on Twitter @ppolsinelli where I post about game design, game development, Unity3d 2D, HTML5, applied games.
+ * Follow us on Twitter @ppolsinelli @pupunzi where we post about game design, game development, Unity3d 2D, HTML5, CSS3, jquery, applied games.
  *
  */
 
@@ -57,6 +57,31 @@ function BehaviourTreeInstance(behaviourTree, actor, numberOfLoops) {
         this.nodeAndState.push([node, state]);
     }
 
+    //commodity methods
+    this.hasToStart = function () {
+        var state = this.findStateForNode(this.currentNode);
+        return state != BehaviourTreeInstance.STATE_EXECUTING && state != BehaviourTreeInstance.STATE_COMPUTE_RESULT;
+    }
+
+    this.hasToComplete = function () {
+        var state = this.findStateForNode(this.currentNode);
+        return state == BehaviourTreeInstance.STATE_COMPUTE_RESULT;
+    }
+
+    this.completedAsync = function () {
+        if (this.currentNode.isConditional())
+            this.setState(BehaviourTreeInstance.STATE_COMPUTE_RESULT);
+        else
+            this.setState(BehaviourTreeInstance.STATE_COMPLETED);
+    }
+
+
+    this.waitUntil = function (callback) {
+        this.setState(BehaviourTreeInstance.STATE_EXECUTING);
+        callback();
+    }
+
+
 }
 BehaviourTreeInstance.STATE_TO_BE_STARTED = "STATE_TO_BE_STARTED";
 BehaviourTreeInstance.STATE_WAITING = "STATE_WAITING";
@@ -81,6 +106,10 @@ function ActionNode(action) {
 
     this.children = function (behaviourTreeInstanceState) {
         return null;
+    }
+
+    this.isConditional = function () {
+        return false;
     }
 
 }
@@ -134,6 +163,11 @@ function SelectorNode(conditionFunction, actionIfTrue, actionIfFalse) {
         return [actionIfTrue, actionIfFalse];
     }
 
+    this.isConditional = function () {
+        return true;
+    }
+
+
 }
 // selector model and implementation - END
 
@@ -177,6 +211,10 @@ function SelectorArrayNode(conditionFunction, actionArray) {
         return actionArray;
     }
 
+    this.isConditional = function () {
+        return true;
+    }
+
 }
 // SelectorArray model and implementation - END
 
@@ -196,7 +234,12 @@ function SequencerNode(actionArray) {
     this.children = function () {
         return actionArray;
     }
-}
+
+    this.isConditional = function () {
+        return false;
+    }
+
+};
 // Sequencer model and implementation - END
 
 
@@ -214,7 +257,7 @@ function SelectorRandomNode(actionArray) {
 
 
         var randomIndex = Math.floor(Math.random() * actionArray.length);
-        console.debug("randomIndex",randomIndex);
+        console.debug("randomIndex", randomIndex);
         behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_WAITING, this);
 
         for (var j = 0; j < actionArray.length; j++) {
@@ -228,6 +271,11 @@ function SelectorRandomNode(actionArray) {
     this.children = function () {
         return actionArray;
     }
+
+    this.isConditional = function () {
+        return false;
+    }
+
 };
 // SelectorRandom model and implementation - END
 
@@ -249,7 +297,12 @@ function SequencerRandomNode(actionArray) {
     this.children = function () {
         return actionArray;
     }
-}
+
+    this.isConditional = function () {
+        return false;
+    }
+
+};
 // SequencerRandom model and implementation - END
 
 /**

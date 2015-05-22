@@ -13,7 +13,7 @@
  */
 function BehaviourTreeInstance(behaviourTree, actor) {
 
-	this.behaviorTree = behaviourTree;
+	this.behaviourTree = behaviourTree;
 	this.actor = actor;
 	this.nodeAndState = [];
 	this.currentNode=null;
@@ -78,8 +78,10 @@ function SelectorNode(conditionFunction, actionIfTrue, actionIfFalse) {
 	 */
 	this.execute = function(behaviourTreeInstanceState) {
 
+		console.debug("conditionFunction ",conditionFunction);
+
 		//var result = executeBehaviourTree(behaviourTreeInstanceState)
-		var result = conditionFunction(behaviourTreeInstanceState.actor);
+		var result = conditionFunction.execute(behaviourTreeInstanceState);
 		behaviourTreeInstanceState.nodeAndState.push([this,BehaviourTreeInstance.STATE_WAITING]);
 
 		if (result) {
@@ -196,9 +198,16 @@ function SequencerRandomNode(actionArray) {
 function executeBehaviourTree(behaviourTreeInstance) {
 
 	//find current node to be executed, or a running one, or root to launch, or root completed
-	behaviourTreeInstance.currentNode = findCurrentNode(behaviourTreeInstance,behaviourTreeInstance);
+	behaviourTreeInstance.currentNode = findCurrentNode(behaviourTreeInstance.behaviourTree, behaviourTreeInstance);
+
+	console.debug("node", behaviourTreeInstance.currentNode);
 
 	var state = behaviourTreeInstance.findStateForNode(behaviourTreeInstance.currentNode);
+	console.debug("state", state);
+
+
+	if (state == null)
+		state = BehaviourTreeInstance.STATE_TO_BE_STARTED;
 
 	if (state == BehaviourTreeInstance.STATE_EXECUTING)
 	 return;
@@ -207,10 +216,13 @@ function executeBehaviourTree(behaviourTreeInstance) {
 		state = BehaviourTreeInstance.STATE_COMPUTE_RESULT;
 
 	if (state == BehaviourTreeInstance.STATE_TO_BE_STARTED)
-    node.start(behaviourTreeInstance);
+		state = BehaviourTreeInstance.STATE_COMPUTE_RESULT;
+//	behaviourTreeInstance.currentNode.start(behaviourTreeInstance);
 
 	if (state == BehaviourTreeInstance.STATE_COMPUTE_RESULT)
-		node.execute(behaviourTreeInstance);
+		behaviourTreeInstance.currentNode.execute(behaviourTreeInstance);
+
+	console.debug("state-1", state);
 
 }
 
@@ -249,11 +261,11 @@ function findCurrentNode(node, behaviourTreeInstance) {
  */
 function tick(behaviourTreeInstance) {
 
-	executeBehaviourTree(behaviourTreeInstance);
+	//executeBehaviourTree(behaviourTreeInstance);
 
-	/*setInterval(function () {
-	 executeBehaviourTreeWithTick(behaviourTreeInstanceState);
-	 }, 1000); */
+	setInterval(function () {
+		executeBehaviourTree(behaviourTreeInstance);
+	 }, 1000);
 }
 
 

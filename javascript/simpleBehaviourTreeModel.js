@@ -11,12 +11,29 @@
 /**
  * This does nothing but we like to have a "root"
  */
-function BehaviourTreeInstance(behaviourTree, actor) {
+
+var btiId = 0;
+
+/**
+ *
+ * @param behaviourTree
+ * @param actor
+ * @param numberOfLoops 0 forever
+ * @constructor
+ */
+function BehaviourTreeInstance(behaviourTree, actor, numberOfLoops) {
+
+    if (!numberOfLoops)
+        numberOfLoops = 1;
 
 	this.behaviourTree = behaviourTree;
 	this.actor = actor;
 	this.nodeAndState = [];
 	this.currentNode=null;
+    this.numberOfLoops = numberOfLoops;
+
+    this.numberOfRuns = 0;
+    this.finished = false;
 
 	this.findStateForNode = function (node) {
 
@@ -26,8 +43,18 @@ function BehaviourTreeInstance(behaviourTree, actor) {
 		}
 	}
 
-	this.setState = function (state) {
-		this.nodeAndState.push([this.currentNode,state]);
+	this.setState = function (state, node) {
+
+        if (!node)
+            node = this.currentNode;
+
+        for(var i = 0;i<this.nodeAndState.length;i++) {
+            if (this.nodeAndState[i][0]==node) {
+                this.nodeAndState.splice(i, 1);
+                break;
+            }
+        }
+		this.nodeAndState.push([node,state]);
 	}
 
 }
@@ -45,7 +72,8 @@ BehaviourTreeInstance.STATE_COMPLETED = "STATE_COMPLETED";
  * method to be called by the engine.
  */
 function ActionNode(action) {
-	this.action = action;
+    this.id = btiId++;
+    this.action = action;
 
 	this.execute = function(behaviourTreeInstanceState) {
 		return action(behaviourTreeInstanceState);
@@ -67,6 +95,7 @@ function ActionNode(action) {
  */
 function SelectorNode(conditionFunction, actionIfTrue, actionIfFalse) {
 
+    this.id = btiId++;
 	this.conditionFunction = conditionFunction;
 	this.actionIfTrue = actionIfTrue;
 	this.actionIfFalse = actionIfFalse;
@@ -82,14 +111,14 @@ function SelectorNode(conditionFunction, actionIfTrue, actionIfFalse) {
 
 		//var result = executeBehaviourTree(behaviourTreeInstanceState)
 		var result = conditionFunction.execute(behaviourTreeInstanceState);
-		behaviourTreeInstanceState.nodeAndState.push([this,BehaviourTreeInstance.STATE_WAITING]);
+		behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_WAITING);
 
 		if (result) {
-			behaviourTreeInstanceState.nodeAndState.push([actionIfTrue,BehaviourTreeInstance.STATE_TO_BE_STARTED]);
-			behaviourTreeInstanceState.nodeAndState.push([actionIfFalse,BehaviourTreeInstance.STATE_DISCARDED]);
+			behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_TO_BE_STARTED,actionIfTrue);
+			behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_DISCARDED,actionIfFalse);
 		} else {
-			behaviourTreeInstanceState.nodeAndState.push([actionIfTrue,BehaviourTreeInstance.STATE_DISCARDED]);
-			behaviourTreeInstanceState.nodeAndState.push([actionIfFalse,BehaviourTreeInstance.STATE_TO_BE_STARTED]);
+			behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_DISCARDED,actionIfFalse);
+			behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_TO_BE_STARTED,actionIfTrue);
 		}
 
 
@@ -197,8 +226,24 @@ function SequencerRandomNode(actionArray) {
  */
 function executeBehaviourTree(behaviourTreeInstance) {
 
+    if (behaviourTreeInstance.finished)
+      return;
+
+
 	//find current node to be executed, or a running one, or root to launch, or root completed
 	behaviourTreeInstance.currentNode = findCurrentNode(behaviourTreeInstance.behaviourTree, behaviourTreeInstance);
+
+    if (behaviourTreeInstance.currentNode == null) {
+        behaviourTreeInstance.numberOfRuns++;
+        if (behaviourTreeInstance.numberOfLoops==0 || behaviourTreeInstance.numberOfRuns<behaviourTreeInstance.numberOfLoops) {
+            behaviourTreeInstance.nodeAndState = [];
+            behaviourTreeInstance.currentNode = findCurrentNode(behaviourTreeInstance.behaviourTree, behaviourTreeInstance);
+        } else {
+            console.debug(behaviourTreeInstance.actor.name+" has finished.");
+            behaviourTreeInstance.finished = true;
+            return;
+        }
+    }
 
 	console.debug("node", behaviourTreeInstance.currentNode);
 
@@ -206,21 +251,29 @@ function executeBehaviourTree(behaviourTreeInstance) {
 	console.debug("state", state);
 
 
-	if (state == null)
-		state = BehaviourTreeInstance.STATE_TO_BE_STARTED;
+	if (state == null || state == BehaviourTreeInstance.STATE_TO_BE_STARTED) {
 
-	if (state == BehaviourTreeInstance.STATE_EXECUTING)
-	 return;
+        behaviourTreeInstance.currentNode.execute(behaviourTreeInstance);
+        var afterState = behaviourTreeInstance.findStateForNode(behaviourTreeInstance.currentNode);
+        if (afterState == BehaviourTreeInstance.STATE_TO_BE_STARTED)
+            behaviourTreeInstance.setState(BehaviourTreeInstance.STATE_WAITING);
+        return;
+    }
 
-	if (state == BehaviourTreeInstance.STATE_WAITING)
-		state = BehaviourTreeInstance.STATE_COMPUTE_RESULT;
 
-	if (state == BehaviourTreeInstance.STATE_TO_BE_STARTED)
-		state = BehaviourTreeInstance.STATE_COMPUTE_RESULT;
+	//if (state == BehaviourTreeInstance.STATE_WAITING)
+	//	state = BehaviourTreeInstance.STATE_COMPUTE_RESULT;
+
+	//if (state == BehaviourTreeInstance.STATE_TO_BE_STARTED)
+	//	state = BehaviourTreeInstance.STATE_COMPUTE_RESULT;
+
 //	behaviourTreeInstance.currentNode.start(behaviourTreeInstance);
 
-	if (state == BehaviourTreeInstance.STATE_COMPUTE_RESULT)
-		behaviourTreeInstance.currentNode.execute(behaviourTreeInstance);
+	if (state == BehaviourTreeInstance.STATE_COMPUTE_RESULT) {
+        behaviourTreeInstance.currentNode.execute(behaviourTreeInstance);
+        state = BehaviourTreeInstance.STATE_COMPLETED;
+        return;
+    }
 
 	console.debug("state-1", state);
 
@@ -230,7 +283,7 @@ function findCurrentNode(node, behaviourTreeInstance) {
 
 	var state = behaviourTreeInstance.findStateForNode(node);
 	if (state==null) {
-		behaviourTreeInstance.nodeAndState.push([node,BehaviourTreeInstance.STATE_TO_BE_STARTED]);
+		behaviourTreeInstance.setState(BehaviourTreeInstance.STATE_TO_BE_STARTED,node);
 		return node;
 	}
 
@@ -241,15 +294,19 @@ function findCurrentNode(node, behaviourTreeInstance) {
 		return node;
 
 	var children = node.children();
-	if (children==null)
-	  return node;
-	else {
+	if (children==null) {
+        return null;
+    } else {
 
 		for (var i = 0; i < children.length; i++) {
-			var childNode = findCurrentNode(children[i]);
+			var childNode = findCurrentNode(children[i],behaviourTreeInstance);
 			if (childNode)
 			  return childNode;
 		}
+        if (state==BehaviourTreeInstance.STATE_WAITING) {
+            behaviourTreeInstance.setState(BehaviourTreeInstance.STATE_COMPLETED, node);
+            console.debug("setting to completed ",node);
+        }
 	}
 	return null;
 }

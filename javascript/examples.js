@@ -21,16 +21,15 @@ function writeOnConsole(text){
 }
 
 
-var totalKidsWondering = 20;
 
 function secondExample() {
 
-
+    var totalKidsWondering = 20;
 
 	var PolicemanManager = {};
 
 
-	PolicemanManager.ifKidInSight = function (behaviourTreeInstanceState) {
+	/*PolicemanManager.ifKidInSight = function (behaviourTreeInstanceState) {
 		if (totalKidsWondering>0) {
 			writeOnConsole("total kids wandering: " + totalKidsWondering);
 			var b = Math.random() > 0.4;
@@ -40,14 +39,14 @@ function secondExample() {
 			writeOnConsole(behaviourTreeInstanceState.actor.name+": "+"No more kids");
 			return false;
 		}
-	};
+	};  */
 
-	PolicemanManager.ifIsKidInControl = function (behaviourTreeInstanceState) {
+	/*PolicemanManager.ifIsKidInControl = function (behaviourTreeInstanceState) {
 		behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_COMPLETED);
 		var b = Math.random() > 0.5;
 		writeOnConsole(behaviourTreeInstanceState.actor.name+": "+"Hi kid, where do you live? " + (b ? "F**k you" : "Home"));
 		return  b;
-	};
+	};*/
 
 	PolicemanManager.ifChaseGotKid = function (behaviourTreeInstanceState) {
 
@@ -58,14 +57,21 @@ function secondExample() {
 
             writeOnConsole("running after kid");
 
-            console.debug("ifChaseGotKid currentNode ",behaviourTreeInstanceState.currentNode);
+            console.debug("ifChaseGotKid currentNode ", behaviourTreeInstanceState.currentNode);
 
             behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_EXECUTING);
 
             setTimeout(function () {
+
                 behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_COMPUTE_RESULT);
+
                 writeOnConsole(behaviourTreeInstanceState.actor.name + ": " + " got child");
             }, 5000);
+
+        } else if (state == BehaviourTreeInstance.STATE_COMPUTE_RESULT) {
+
+            var b = Math.random() > 0.5;
+            return  b;
 
         } else {
             writeOnConsole("running after kid doing nothing");
@@ -82,7 +88,6 @@ function secondExample() {
             writeOnConsole(behaviourTreeInstanceState.actor.name + ": " + "Bring child to station");
 
             behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_EXECUTING);
-
 
             setTimeout(function () {
                 behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_COMPLETED);
@@ -103,8 +108,8 @@ function secondExample() {
 		writeOnConsole(behaviourTreeInstanceState.actor.name+": "+"Smoke");
 	};
 
-	PolicemanManager.actionWanderAround = function (behaviourTreeInstance) {
-		behaviourTreeInstance.setState(BehaviourTreeInstance.STATE_COMPUTE_RESULT);
+	PolicemanManager.actionWanderAround = function (behaviourTreeInstanceState) {
+		behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_COMPUTE_RESULT);
 		writeOnConsole(behaviourTreeInstanceState.actor.name+": "+"Wander around");
 	};
 
@@ -130,7 +135,7 @@ function secondExample() {
 	policeman1.name = "Bobby";
 	policeman1.haveBeenChasing=0;
 
-    bti = new BehaviourTreeInstance(patrollingPoliceBehaviourTree,policeman1,2);
+    bti = new BehaviourTreeInstance(patrollingPoliceBehaviourTree,policeman1,1);
 
 	tick(bti);
 

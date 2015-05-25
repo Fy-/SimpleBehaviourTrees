@@ -1,10 +1,10 @@
 /**
- * Created by Pietro Polsinelli on 15/05/2015.
+ * Created by Pietro Polsinelli && Matteo Bicocchi on 15/05/2015.
  *
  * Fisrt inspired by the simplicity of
  * http://stackoverflow.com/questions/4241824/creating-an-ai-behavior-tree-in-c-sharp-how
  *
- * Follow me on Twitter @ppolsinelli where I post about game design, game development, Unity3d 2D, HTML5, applied games.
+ * Follow us on Twitter @ppolsinelli @pupunzi where we post about game design, game development, Unity3d 2D, HTML5, CSS3, jquery, applied games.
  *
  */
 

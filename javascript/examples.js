@@ -12,6 +12,7 @@
 /**
  * Utility functions
  */
+
 function writeOnConsole(text){
 	var node = document.createElement("LI");                 // Create a <li> node
 	var textnode = document.createTextNode(text);         // Create a text node
@@ -191,7 +192,20 @@ function example() {
 	policeman2.name = "Jimmy";
 	var bti2 = new BehaviourTreeInstance(patrollingPoliceBehaviourTreeTwoResults,policeman2,1);
 
+
 	tick(bti2);
 
 }
+
+
+/**
+ * This is what makes all your behaviour trees instances run. (implement your own tick)
+ */
+function tick(behaviourTreeInstance) {
+	setInterval(function () {
+		behaviourTreeInstance.executeBehaviourTree();
+	}, 1000);
+}
+
+
 

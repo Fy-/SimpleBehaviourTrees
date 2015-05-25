@@ -296,6 +296,9 @@ function SelectorArrayNode(conditionFunction, actionArray) {
 
 
 // Sequencer model and implementation - BEGIN
+/**
+ * This is a selector that executes all actions in sequence.
+ */
 function SequencerNode(actionArray) {
 
 	this.actionArray = actionArray;
@@ -320,6 +323,9 @@ function SequencerNode(actionArray) {
 
 
 // SelectorRandom model and implementation - BEGIN
+/**
+ * This is a cool extension of selector that executes randomly one of the actions in the array.
+ */
 function SelectorRandomNode(actionArray) {
 
 	this.actionArray = actionArray;
@@ -357,6 +363,9 @@ function SelectorRandomNode(actionArray) {
 
 
 // SequencerRandom model and implementation - BEGIN
+/**
+ * This is a cool extension of selector that executes all actions in random sequence.
+ */
 function SequencerRandomNode(actionArray) {
 
 	this.actionArray = actionArray;

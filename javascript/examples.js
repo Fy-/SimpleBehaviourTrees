@@ -22,7 +22,6 @@ function writeOnConsole(text){
 }
 
 
-
 function example() {
 
 	var totalKidsWondering = 20;
@@ -137,7 +136,6 @@ function example() {
 	 * Here are several examples of behaviour tree definitions. You can create your own.
 	 */
 	var patrollingPoliceBehaviourTreeTwoResults =
-
 			(new
 					SelectorNode(
 					new ActionNode(PolicemanManager.ifKidInSight),
@@ -150,8 +148,8 @@ function example() {
 					new ActionNode(PolicemanManager.actionSmoke)
 			));
 
-	var patrollingPoliceBehaviourTreeMultiResults = new
-        SelectorArrayNode(
+	var patrollingPoliceBehaviourTreeMultiResults =
+			new SelectorArrayNode(
         new ActionNode(PolicemanManager.ifChaseGotKidCases),
         [
             new ActionNode(PolicemanManager.actionBringChildToStation),
@@ -161,8 +159,8 @@ function example() {
     );
 
 
-    var patrollingPoliceBehaviourTreeRandomResults = new
-        SelectorRandomNode(
+    var patrollingPoliceBehaviourTreeRandomResults =
+		    new SelectorRandomNode(
         [
             new ActionNode(PolicemanManager.actionBringChildToStation),
             new SequencerRandomNode([new ActionNode(PolicemanManager.actionWanderAround),new ActionNode(PolicemanManager.actionSmoke)]),
@@ -170,8 +168,8 @@ function example() {
         ]
     );
 
-    var patrollingPoliceBehaviourTreeRandom = new
-        SequencerRandomNode([new ActionNode(PolicemanManager.actionWanderAround),new ActionNode(PolicemanManager.actionSmoke)]);
+    var patrollingPoliceBehaviourTreeRandom =
+		    new SequencerRandomNode([new ActionNode(PolicemanManager.actionWanderAround),new ActionNode(PolicemanManager.actionSmoke)]);
     // Behaviour Tree Instance END
 
 

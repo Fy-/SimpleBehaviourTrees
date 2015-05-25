@@ -24,12 +24,12 @@ function writeOnConsole(text){
 
 function example() {
 
-    var totalKidsWondering = 20;
+	var totalKidsWondering = 20;
 
-    /**
-     *  PolicemanManager is like a static instance that processes actions on a given actor
-     *  through a behaviour tree instance.
-     */
+	/**
+	 *  PolicemanManager is like a static instance that processes actions on a given actor
+	 *  through a behaviour tree instance.
+	 */
 	var PolicemanManager = {};
 
 	PolicemanManager.ifKidInSight = function (behaviourTreeInstanceState) {
@@ -110,6 +110,7 @@ function example() {
 
             totalKidsWondering--;
         }
+
 	};
 
 	PolicemanManager.actionBringChildHome = function (behaviourTreeInstanceState) {
@@ -125,30 +126,30 @@ function example() {
         writeOnConsole(behaviourTreeInstanceState.actor.name+": "+"  I'm hurt!");
     };
 
+
 	PolicemanManager.actionWanderAround = function (behaviourTreeInstanceState) {
 		writeOnConsole(behaviourTreeInstanceState.actor.name+": "+"Wander around");
 	};
 
 	// Behaviour Tree Instance BEGIN
-    /**
-     * Here are several examples of behaviour tree definitions. You can create your own.
-     */
+	/**
+	 * Here are several examples of behaviour tree definitions. You can create your own.
+	 */
 	var patrollingPoliceBehaviourTreeTwoResults =
 
-        (new
-            SelectorNode(
-                new ActionNode(PolicemanManager.ifKidInSight),
-                (new
-                    SelectorNode(
-                    new ActionNode(PolicemanManager.ifChaseGotKid),
-                    new ActionNode(PolicemanManager.actionBringChildToStation),
-                    new SequencerNode([new ActionNode(PolicemanManager.actionWanderAround),new ActionNode(PolicemanManager.actionSmoke)])
-                )),
-                new ActionNode(PolicemanManager.actionSmoke)
-        ));
+			(new
+					SelectorNode(
+					new ActionNode(PolicemanManager.ifKidInSight),
+					(new
+							SelectorNode(
+							new ActionNode(PolicemanManager.ifChaseGotKid),
+							new ActionNode(PolicemanManager.actionBringChildToStation),
+							new SequencerNode([new ActionNode(PolicemanManager.actionWanderAround),new ActionNode(PolicemanManager.actionSmoke)])
+					)),
+					new ActionNode(PolicemanManager.actionSmoke)
+			));
 
-
-    var patrollingPoliceBehaviourTreeMultiResults = new
+	var patrollingPoliceBehaviourTreeMultiResults = new
         SelectorArrayNode(
         new ActionNode(PolicemanManager.ifChaseGotKidCases),
         [
@@ -181,17 +182,16 @@ function example() {
 	policeman1.name = "Bobby";
 	policeman1.haveBeenChasing=0;
 
-    bti = new BehaviourTreeInstance(patrollingPoliceBehaviourTreeTwoResults,policeman1,1);
+  var bti1 = new BehaviourTreeInstance(patrollingPoliceBehaviourTreeTwoResults,policeman1,1);
 
-	tick(bti);
+	tick(bti1);
 
-	/*var policeman2 = {};
-	 policeman2.name = "Jimmy";
-	 tick(patrollingPoliceBehaviourTree, policeman2);
 
-	 var socialWorker1 = {};
-	 socialWorker1.name = "Helping Dude";
-	 tick(socialWorkerBehaviourTree, socialWorker1);*/
+	var policeman2 = {};
+	policeman2.name = "Jimmy";
+	var bti2 = new BehaviourTreeInstance(patrollingPoliceBehaviourTreeTwoResults,policeman2,1);
+
+	tick(bti2);
 
 }
 

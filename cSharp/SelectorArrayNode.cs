@@ -4,26 +4,26 @@ using System.Linq;
 
 public class SelectorArrayNode : BehaviourTreeNode
 {
-  Func<BehaviourTreeInstance, int> conditionFunction;
+  Func<BehaviourTreeInstance, ExecutionResult> conditionFunction;
   private BehaviourTreeNode[] actionArray;
 
-  public SelectorArrayNode(Func<BehaviourTreeInstance, int> conditionFunction, 
+  public SelectorArrayNode(Func<BehaviourTreeInstance, ExecutionResult> conditionFunction, 
     BehaviourTreeNode[] actionArray)
   {
     this.conditionFunction = conditionFunction;
     this.actionArray = actionArray;
   }
 
-  public void Execute(BehaviourTreeInstance behaviourTreeInstance)
+  public ExecutionResult Execute(BehaviourTreeInstance behaviourTreeInstance)
   {
     var state = behaviourTreeInstance.NodeAndState[this];
 
     if (state == BehaviourTreeInstance.NodeState.STATE_EXECUTING)
-      return;
+      return new ExecutionResult(true);
 
     if (state == BehaviourTreeInstance.NodeState.STATE_COMPUTE_RESULT)
     {
-      int resultInt = conditionFunction(behaviourTreeInstance);
+      int resultInt = conditionFunction(behaviourTreeInstance).IntegerResult;
      
       behaviourTreeInstance.NodeAndState[this] = BehaviourTreeInstance.NodeState.STATE_WAITING;
 
@@ -37,8 +37,9 @@ public class SelectorArrayNode : BehaviourTreeNode
     }
     else
     {
-      conditionFunction(behaviourTreeInstance);
+      return conditionFunction(behaviourTreeInstance);
     }
+    return new ExecutionResult(true);
   }
 
   public bool IsConditional()

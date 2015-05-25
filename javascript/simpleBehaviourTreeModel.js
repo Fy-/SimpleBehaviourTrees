@@ -17,150 +17,149 @@
  */
 function BehaviourTreeInstance(behaviourTree, actor, numberOfLoops) {
 
-	if (!numberOfLoops)
-		numberOfLoops = 1;
+    if (!numberOfLoops)
+        numberOfLoops = 1;
 
-	this.behaviourTree = behaviourTree;
-	this.actor = actor;
-	this.nodeAndState = [];
-	this.currentNode = null;
-	this.numberOfLoops = numberOfLoops;
+    this.behaviourTree = behaviourTree;
+    this.actor = actor;
+    this.nodeAndState = [];
+    this.currentNode = null;
+    this.numberOfLoops = numberOfLoops;
 
-	this.numberOfRuns = 0;
-	this.finished = false;
+    this.numberOfRuns = 0;
+    this.finished = false;
 
-	this.findStateForNode = function(node) {
+    this.findStateForNode = function (node) {
 
-		for (var i = 0; i < this.nodeAndState.length; i++) {
-			if (this.nodeAndState[i][0] == node)
-				return this.nodeAndState[i][1];
-		}
-	};
+        for (var i = 0; i < this.nodeAndState.length; i++) {
+            if (this.nodeAndState[i][0] == node)
+                return this.nodeAndState[i][1];
+        }
+    };
 
-	this.setState = function(state, node) {
+    this.setState = function (state, node) {
 
-		if (!node)
-			node = this.currentNode;
+        if (!node)
+            node = this.currentNode;
 
-		for (var i = 0; i < this.nodeAndState.length; i++) {
-			if (this.nodeAndState[i][0] == node) {
-				this.nodeAndState.splice(i, 1);
-				break;
-			}
-		}
-		this.nodeAndState.push([node, state]);
-	};
+        for (var i = 0; i < this.nodeAndState.length; i++) {
+            if (this.nodeAndState[i][0] == node) {
+                this.nodeAndState.splice(i, 1);
+                break;
+            }
+        }
+        this.nodeAndState.push([node, state]);
+    };
 
-	//commodity methods
-	this.hasToStart = function() {
-		var state = this.findStateForNode(this.currentNode);
-		return state != BehaviourTreeInstance.STATE_EXECUTING && state != BehaviourTreeInstance.STATE_COMPUTE_RESULT;
-	};
+    //commodity methods
+    this.hasToStart = function () {
+        var state = this.findStateForNode(this.currentNode);
+        return state != BehaviourTreeInstance.STATE_EXECUTING && state != BehaviourTreeInstance.STATE_COMPUTE_RESULT;
+    };
 
-	this.hasToComplete = function() {
-		var state = this.findStateForNode(this.currentNode);
-		return state == BehaviourTreeInstance.STATE_COMPUTE_RESULT;
-	};
+    this.hasToComplete = function () {
+        var state = this.findStateForNode(this.currentNode);
+        return state == BehaviourTreeInstance.STATE_COMPUTE_RESULT;
+    };
 
-	this.completedAsync = function() {
-		if (this.currentNode.isConditional())
-			this.setState(BehaviourTreeInstance.STATE_COMPUTE_RESULT);
-		else
-			this.setState(BehaviourTreeInstance.STATE_COMPLETED);
-	};
+    this.completedAsync = function () {
+        if (this.currentNode.isConditional())
+            this.setState(BehaviourTreeInstance.STATE_COMPUTE_RESULT);
+        else
+            this.setState(BehaviourTreeInstance.STATE_COMPLETED);
+    };
 
-	this.waitUntil = function(callback) {
-		this.setState(BehaviourTreeInstance.STATE_EXECUTING);
-		callback();
-	};
+    this.waitUntil = function (callback) {
+        this.setState(BehaviourTreeInstance.STATE_EXECUTING);
+        callback();
+    };
 
-	/**
+    /**
 	 * This is the function that crawls the behaviour tree instance you pass to it
 	 * and calls the executors if the the argument is a node of some kind,
 	 * calls it as an action otherwise.
 	 */
-	this.executeBehaviourTree = function() {
+    this.executeBehaviourTree = function () {
 
-		if (this.finished)
-			return;
-
-
-		//find current node to be executed, or a running one, or root to launch, or root completed
-		this.currentNode = this.findCurrentNode(this.behaviourTree);
-
-		if (this.currentNode == null) {
-			this.numberOfRuns++;
-			if (this.numberOfLoops == 0 || this.numberOfRuns < this.numberOfLoops) {
-				this.nodeAndState = [];
-				this.currentNode = this.findCurrentNode(this.behaviourTree);
-			} else {
-				console.debug(this.actor.name + " has finished.");
-				this.finished = true;
-				return;
-			}
-		}
-
-//		console.debug("node", this.currentNode);
-
-		var state = this.findStateForNode(this.currentNode);
-		console.debug("state", state);
+        if (this.finished)
+            return;
 
 
-		if (state == null || state == BehaviourTreeInstance.STATE_TO_BE_STARTED) {
+        //find current node to be executed, or a running one, or root to launch, or root completed
+        this.currentNode = this.findCurrentNode(this.behaviourTree);
 
-			this.currentNode.execute(this);
-			var afterState = this.findStateForNode(this.currentNode);
-			if (afterState == BehaviourTreeInstance.STATE_TO_BE_STARTED)
-				this.setState(BehaviourTreeInstance.STATE_WAITING);
-			return;
-		}
+        if (this.currentNode == null) {
+            this.numberOfRuns++;
+            if (this.numberOfLoops == 0 || this.numberOfRuns < this.numberOfLoops) {
+                this.nodeAndState = [];
+                this.currentNode = this.findCurrentNode(this.behaviourTree);
+            } else {
+                console.debug(this.actor.name + " has finished.");
+                this.finished = true;
+                return;
+            }
+        }
 
-		if (state == BehaviourTreeInstance.STATE_COMPUTE_RESULT) {
+        //		console.debug("node", this.currentNode);
 
-			var result = this.currentNode.execute(this);
-			state = BehaviourTreeInstance.STATE_COMPLETED;
-			return result;
-		}
+        var state = this.findStateForNode(this.currentNode);
+        console.debug("state", state);
 
-		console.debug("state-1", state);
 
-	}
+        if (state == null || state == BehaviourTreeInstance.STATE_TO_BE_STARTED) {
 
-	this.findCurrentNode = function(node) {
+            this.currentNode.execute(this);
+            var afterState = this.findStateForNode(this.currentNode);
+            if (afterState == BehaviourTreeInstance.STATE_TO_BE_STARTED)
+                this.setState(BehaviourTreeInstance.STATE_WAITING);
+            return;
+        }
 
-		var state = this.findStateForNode(node);
+        if (state == BehaviourTreeInstance.STATE_COMPUTE_RESULT) {
 
-		if (state == BehaviourTreeInstance.STATE_DISCARDED)
-			return null;
+            var result = this.currentNode.execute(this);
+            state = BehaviourTreeInstance.STATE_COMPLETED;
+            return result;
+        }
 
-		if (state == null) {
-			this.setState(BehaviourTreeInstance.STATE_TO_BE_STARTED, node);
-			return node;
-		}
+        //console.debug("state-1", state);
+    };
 
-		if (state == BehaviourTreeInstance.STATE_EXECUTING ||
-				state == BehaviourTreeInstance.STATE_COMPUTE_RESULT ||
-				state == BehaviourTreeInstance.STATE_TO_BE_STARTED
-				)
-			return node;
+    this.findCurrentNode = function(node) {
 
-		var children = node.children();
-		if (children == null) {
-			return null;
-		} else {
+        var state = this.findStateForNode(node);
 
-			for (var i = 0; i < children.length; i++) {
-				var childNode = this.findCurrentNode(children[i]);
-				if (childNode)
-					return childNode;
-			}
-			if (state == BehaviourTreeInstance.STATE_WAITING) {
-				this.setState(BehaviourTreeInstance.STATE_COMPLETED, node);
-//				console.debug("setting to completed ", node);
-			}
-		}
-		return null;
-	}
+        if (state == BehaviourTreeInstance.STATE_DISCARDED)
+            return null;
+
+        if (state == null) {
+            this.setState(BehaviourTreeInstance.STATE_TO_BE_STARTED, node);
+            return node;
+        }
+
+        if (state == BehaviourTreeInstance.STATE_EXECUTING ||
+                state == BehaviourTreeInstance.STATE_COMPUTE_RESULT ||
+                state == BehaviourTreeInstance.STATE_TO_BE_STARTED
+        )
+            return node;
+
+        var children = node.children();
+        if (children == null) {
+            return null;
+        } else {
+
+            for (var i = 0; i < children.length; i++) {
+                var childNode = this.findCurrentNode(children[i]);
+                if (childNode)
+                    return childNode;
+            }
+            if (state == BehaviourTreeInstance.STATE_WAITING) {
+                this.setState(BehaviourTreeInstance.STATE_COMPLETED, node);
+                //				console.debug("setting to completed ", node);
+            }
+        }
+        return null;
+    };
 }
 
 BehaviourTreeInstance.STATE_TO_BE_STARTED = "STATE_TO_BE_STARTED";
@@ -177,19 +176,19 @@ BehaviourTreeInstance.STATE_COMPLETED = "STATE_COMPLETED";
  * method to be called by the engine.
  */
 function ActionNode(action) {
-	this.action = action;
+    this.action = action;
 
-	this.execute = function(behaviourTreeInstanceState) {
-		return this.action(behaviourTreeInstanceState);
-	};
+    this.execute = function (behaviourTreeInstanceState) {
+        return this.action(behaviourTreeInstanceState);
+    };
 
-	this.children = function() {
-		return null;
-	};
+    this.children = function () {
+        return null;
+    };
 
-	this.isConditional = function() {
-		return false;
-	};
+    this.isConditional = function () {
+        return false;
+    };
 
 }
 // Action model and implementation - END
@@ -202,48 +201,48 @@ function ActionNode(action) {
  */
 function SelectorNode(conditionFunction, actionIfTrue, actionIfFalse) {
 
-	this.conditionFunction = conditionFunction;
-	this.actionIfTrue = actionIfTrue;
-	this.actionIfFalse = actionIfFalse;
+    this.conditionFunction = conditionFunction;
+    this.actionIfTrue = actionIfTrue;
+    this.actionIfFalse = actionIfFalse;
 
-	/**
+    /**
 	 * This makes a given SelectorNode instance execute.
 	 * This function is used by the engine executeBehaviourTree
 	 * when a node of type SelectorNode is met
 	 */
-	this.execute = function(behaviourTreeInstanceState) {
+    this.execute = function (behaviourTreeInstanceState) {
 
-		var state = behaviourTreeInstanceState.findStateForNode(this);
+        var state = behaviourTreeInstanceState.findStateForNode(this);
 
-		if (state == BehaviourTreeInstance.STATE_EXECUTING)
-			return;
+        if (state == BehaviourTreeInstance.STATE_EXECUTING)
+            return;
 
-		if (state == BehaviourTreeInstance.STATE_COMPUTE_RESULT) {
+        if (state == BehaviourTreeInstance.STATE_COMPUTE_RESULT) {
 
-			var result = conditionFunction.execute(behaviourTreeInstanceState);
-			console.debug("SelectorNode result", result);
-			behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_WAITING, this);
+            var result = conditionFunction.execute(behaviourTreeInstanceState);
+            console.debug("SelectorNode result", result);
+            behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_WAITING, this);
 
-			if (result) {
-				behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_TO_BE_STARTED, actionIfTrue);
-				behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_DISCARDED, actionIfFalse);
-			} else {
-				behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_TO_BE_STARTED, actionIfFalse);
-				behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_DISCARDED, actionIfTrue);
-			}
+            if (result) {
+                behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_TO_BE_STARTED, actionIfTrue);
+                behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_DISCARDED, actionIfFalse);
+            } else {
+                behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_TO_BE_STARTED, actionIfFalse);
+                behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_DISCARDED, actionIfTrue);
+            }
 
-		} else {
-			conditionFunction.execute(behaviourTreeInstanceState);
-		}
-	};
+        } else {
+            conditionFunction.execute(behaviourTreeInstanceState);
+        }
+    };
 
-	this.children = function() {
-		return [actionIfTrue, actionIfFalse];
-	};
+    this.children = function () {
+        return [actionIfTrue, actionIfFalse];
+    };
 
-	this.isConditional = function() {
-		return true;
-	};
+    this.isConditional = function () {
+        return true;
+    };
 }
 // selector model and implementation - END
 
@@ -255,41 +254,41 @@ function SelectorNode(conditionFunction, actionIfTrue, actionIfFalse) {
  */
 function SelectorArrayNode(conditionFunction, actionArray) {
 
-	this.conditionFunction = conditionFunction;
-	this.actionArray = actionArray;
+    this.conditionFunction = conditionFunction;
+    this.actionArray = actionArray;
 
-	this.execute = function(behaviourTreeInstanceState) {
+    this.execute = function (behaviourTreeInstanceState) {
 
-		var state = behaviourTreeInstanceState.findStateForNode(this);
+        var state = behaviourTreeInstanceState.findStateForNode(this);
 
-		if (state == BehaviourTreeInstance.STATE_EXECUTING)
-			return;
+        if (state == BehaviourTreeInstance.STATE_EXECUTING)
+            return;
 
-		if (state == BehaviourTreeInstance.STATE_COMPUTE_RESULT) {
+        if (state == BehaviourTreeInstance.STATE_COMPUTE_RESULT) {
 
-			var resultInt = conditionFunction.execute(behaviourTreeInstanceState);
-			console.debug("SelectorArrayNode result", resultInt);
-			behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_WAITING, this);
+            var resultInt = conditionFunction.execute(behaviourTreeInstanceState);
+            console.debug("SelectorArrayNode result", resultInt);
+            behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_WAITING, this);
 
-			for (var j = 0; j < actionArray.length; j++) {
-				if (j == resultInt)
-					behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_TO_BE_STARTED, actionArray[j]);
-				else
-					behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_DISCARDED, actionArray[j]);
-			}
+            for (var j = 0; j < actionArray.length; j++) {
+                if (j == resultInt)
+                    behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_TO_BE_STARTED, actionArray[j]);
+                else
+                    behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_DISCARDED, actionArray[j]);
+            }
 
-		} else {
-			conditionFunction.execute(behaviourTreeInstanceState);
-		}
-	};
+        } else {
+            conditionFunction.execute(behaviourTreeInstanceState);
+        }
+    };
 
-	this.children = function() {
-		return actionArray;
-	};
+    this.children = function () {
+        return actionArray;
+    };
 
-	this.isConditional = function() {
-		return true;
-	};
+    this.isConditional = function () {
+        return true;
+    };
 
 }
 // SelectorArray model and implementation - END
@@ -301,22 +300,22 @@ function SelectorArrayNode(conditionFunction, actionArray) {
  */
 function SequencerNode(actionArray) {
 
-	this.actionArray = actionArray;
+    this.actionArray = actionArray;
 
-	this.execute = function(behaviourTreeInstanceState) {
+    this.execute = function (behaviourTreeInstanceState) {
 
-		behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_WAITING);
+        behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_WAITING);
 
-		behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_TO_BE_STARTED, actionArray[0]);
-	};
+        behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_TO_BE_STARTED, actionArray[0]);
+    };
 
-	this.children = function() {
-		return actionArray;
-	};
+    this.children = function () {
+        return actionArray;
+    };
 
-	this.isConditional = function() {
-		return false;
-	};
+    this.isConditional = function () {
+        return false;
+    };
 
 };
 // Sequencer model and implementation - END
@@ -328,35 +327,35 @@ function SequencerNode(actionArray) {
  */
 function SelectorRandomNode(actionArray) {
 
-	this.actionArray = actionArray;
+    this.actionArray = actionArray;
 
-	this.execute = function(behaviourTreeInstanceState) {
+    this.execute = function (behaviourTreeInstanceState) {
 
-		var state = behaviourTreeInstanceState.findStateForNode(this);
+        var state = behaviourTreeInstanceState.findStateForNode(this);
 
-		if (state == BehaviourTreeInstance.STATE_EXECUTING)
-			return;
+        if (state == BehaviourTreeInstance.STATE_EXECUTING)
+            return;
 
 
-		var randomIndex = Math.floor(Math.random() * actionArray.length);
-		console.debug("randomIndex", randomIndex);
-		behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_WAITING, this);
+        var randomIndex = Math.floor(Math.random() * actionArray.length);
+        console.debug("randomIndex", randomIndex);
+        behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_WAITING, this);
 
-		for (var j = 0; j < actionArray.length; j++) {
-			if (j == randomIndex)
-				behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_TO_BE_STARTED, actionArray[j]);
-			else
-				behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_DISCARDED, actionArray[j]);
-		}
-	};
+        for (var j = 0; j < actionArray.length; j++) {
+            if (j == randomIndex)
+                behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_TO_BE_STARTED, actionArray[j]);
+            else
+                behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_DISCARDED, actionArray[j]);
+        }
+    };
 
-	this.children = function() {
-		return actionArray;
-	};
+    this.children = function () {
+        return actionArray;
+    };
 
-	this.isConditional = function() {
-		return false;
-	};
+    this.isConditional = function () {
+        return false;
+    };
 
 };
 // SelectorRandom model and implementation - END
@@ -368,24 +367,24 @@ function SelectorRandomNode(actionArray) {
  */
 function SequencerRandomNode(actionArray) {
 
-	this.actionArray = actionArray;
+    this.actionArray = actionArray;
 
-	this.execute = function(behaviourTreeInstanceState) {
-		shuffle(actionArray);
+    this.execute = function (behaviourTreeInstanceState) {
+        shuffle(actionArray);
 
-		behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_WAITING);
+        behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_WAITING);
 
-		behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_TO_BE_STARTED, actionArray[0]);
+        behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_TO_BE_STARTED, actionArray[0]);
 
-	};
+    };
 
-	this.children = function() {
-		return actionArray;
-	};
+    this.children = function () {
+        return actionArray;
+    };
 
-	this.isConditional = function() {
-		return false;
-	};
+    this.isConditional = function () {
+        return false;
+    };
 
 };
 // SequencerRandom model and implementation - END
@@ -396,22 +395,22 @@ function SequencerRandomNode(actionArray) {
  * From http://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
  */
 function shuffle(array) {
-	var currentIndex = array.length;
-	var temporaryValue;
-	var randomIndex;
+    var currentIndex = array.length;
+    var temporaryValue;
+    var randomIndex;
 
-	// While there remain elements to shuffle...
-	while (0 !== currentIndex) {
+    // While there remain elements to shuffle...
+    while (0 !== currentIndex) {
 
-		// Pick a remaining element...
-		randomIndex = Math.floor(Math.random() * currentIndex);
-		currentIndex -= 1;
+        // Pick a remaining element...
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex -= 1;
 
-		// And swap it with the current element.
-		temporaryValue = array[currentIndex];
-		array[currentIndex] = array[randomIndex];
-		array[randomIndex] = temporaryValue;
-	}
+        // And swap it with the current element.
+        temporaryValue = array[currentIndex];
+        array[currentIndex] = array[randomIndex];
+        array[randomIndex] = temporaryValue;
+    }
 
-	return array;
+    return array;
 }

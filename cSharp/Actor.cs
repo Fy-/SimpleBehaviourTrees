@@ -5,5 +5,6 @@ using System.Text;
 
   public class Actor
   {
+    public string Name;
   }
 

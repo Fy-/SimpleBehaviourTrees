@@ -7,5 +7,6 @@ public interface BehaviourTreeNode
 {
   ExecutionResult Execute(BehaviourTreeInstance behaviourTreeInstance);
   bool IsConditional();
+  List<BehaviourTreeNode> Children();
 }
 

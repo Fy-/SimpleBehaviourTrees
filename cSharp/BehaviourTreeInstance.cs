@@ -16,13 +16,15 @@ public class BehaviourTreeInstance
   };
 
   private BehaviourTreeNode node;
-  private Actor actor;
+  public Actor actor;
   private int numberOfLoops;
   private int numberOfRuns = 0;
   private bool completed = false;
 
 
-  public Dictionary<BehaviourTreeNode, NodeState> NodeAndState = new Dictionary<BehaviourTreeNode, NodeState>();
+  public Dictionary<BehaviourTreeNode, NodeState> NodeAndState =
+    new Dictionary<BehaviourTreeNode, NodeState>();
+
   private BehaviourTreeNode currentNode = null;
 
   public BehaviourTreeInstance(BehaviourTreeNode node, Actor actor, int numberOfLoops)
@@ -71,7 +73,7 @@ public class BehaviourTreeInstance
     }
 
     //find current node to be executed, or a running one, or root to launch, or root completed
-    currentNode = findCurrentNode();
+    currentNode = FindCurrentNode(node);
 
     if (currentNode == null)
     {
@@ -80,86 +82,85 @@ public class BehaviourTreeInstance
           numberOfRuns < numberOfLoops)
       {
         NodeAndState = new Dictionary<BehaviourTreeNode, NodeState>();
-        currentNode = findCurrentNode(node);
+        currentNode = FindCurrentNode(node);
       }
       else
       {
         completed = true;
-        return;
+        return new ExecutionResult(true);
       }
     }
-    
-    NodeState state = NodeAndState[currentNode];
-    
 
-    if (state == null || state == BehaviourTreeInstance.NodeState.STATE_TO_BE_STARTED)
+    bool toBeStarted = false;
+    if (NodeAndState.ContainsKey(currentNode))
     {
-
-      currentNode.Execute(this);
-      var afterState = findStateForNode(currentNode);
-      if (afterState == BehaviourTreeInstance.NodeState.STATE_TO_BE_STARTED)
-        NodeAndState[currentNode] = BehaviourTreeInstance.NodeState.STATE_WAITING;
-      return;
+      toBeStarted = NodeAndState[currentNode] == BehaviourTreeInstance.NodeState.STATE_TO_BE_STARTED;
+    }
+    else
+    {
+      toBeStarted = true;
     }
 
+    if (toBeStarted)
+    {
+      currentNode.Execute(this);
+      var afterState = NodeAndState[currentNode];
+      if (afterState == BehaviourTreeInstance.NodeState.STATE_TO_BE_STARTED)
+        NodeAndState[currentNode] = BehaviourTreeInstance.NodeState.STATE_WAITING;
+      return new ExecutionResult(true);
+    }
 
-    //if (state == BehaviourTreeInstance.STATE_WAITING)
-    //	state = BehaviourTreeInstance.STATE_COMPUTE_RESULT;
-
-    //if (state == BehaviourTreeInstance.STATE_TO_BE_STARTED)
-    //	state = BehaviourTreeInstance.STATE_COMPUTE_RESULT;
-
-//	behaviourTreeInstance.currentNode.start(behaviourTreeInstance);
+    NodeState state = NodeAndState[currentNode];
 
     if (state == BehaviourTreeInstance.NodeState.STATE_COMPUTE_RESULT)
     {
       ExecutionResult result = currentNode.Execute(this);
-      state = BehaviourTreeInstance.NodeState.STATE_COMPLETED;
+      NodeAndState[currentNode] = BehaviourTreeInstance.NodeState.STATE_COMPLETED;
       return result;
     }
 
     return null;
-
   }
 
-  public BehaviourTreeNode FindCurrentNode(node) {
-
-    var state = behaviourTreeInstance.findStateForNode(node);
-
-    if (state == BehaviourTreeInstance.STATE_DISCARDED)
-        return null;
-
-    if (state == null) {
-        behaviourTreeInstance.setState(BehaviourTreeInstance.STATE_TO_BE_STARTED, node);
-        return node;
+  public BehaviourTreeNode FindCurrentNode(BehaviourTreeNode node)
+  {
+    if (!NodeAndState.ContainsKey(node))
+    {
+      NodeAndState[node] = BehaviourTreeInstance.NodeState.STATE_TO_BE_STARTED;
+      return node;
     }
+    
+    var state = NodeAndState[node];
 
-    if (state == BehaviourTreeInstance.STATE_EXECUTING ||
-        state == BehaviourTreeInstance.STATE_COMPUTE_RESULT ||
-        state == BehaviourTreeInstance.STATE_TO_BE_STARTED
+    if (state == BehaviourTreeInstance.NodeState.STATE_DISCARDED)
+      return null;
+
+    if (state == BehaviourTreeInstance.NodeState.STATE_EXECUTING ||
+        state == BehaviourTreeInstance.NodeState.STATE_COMPUTE_RESULT ||
+        state == BehaviourTreeInstance.NodeState.STATE_TO_BE_STARTED
         )
-        return node;
+      return node;
 
-    var children = node.children();
-    if (children == null) {
-        return null;
-    } else {
-
-        for (var i = 0; i < children.length; i++) {
-            var childNode = findCurrentNode(children[i], behaviourTreeInstance);
-            if (childNode)
-                return childNode;
-        }
-        if (state == BehaviourTreeInstance.STATE_WAITING) {
-            behaviourTreeInstance.setState(BehaviourTreeInstance.STATE_COMPLETED, node);
-            console.debug("setting to completed ", node);
-        }
+    var children = node.Children();
+    if (children == null)
+    {
+      return null;
+    }
+    else
+    {
+      for (var i = 0; i < node.Children().Count; i++)
+      {
+        var childNode = FindCurrentNode(children[i]);
+        if (childNode != null)
+          return childNode;
+      }
+      if (state == BehaviourTreeInstance.NodeState.STATE_WAITING)
+      {
+        NodeAndState[node] = BehaviourTreeInstance.NodeState.STATE_COMPLETED;
+      }
     }
     return null;
-}
-
-
-
+  }
 
 
 }

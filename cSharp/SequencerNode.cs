@@ -4,7 +4,7 @@ using System.Linq;
 
 public class SequencerNode : BehaviourTreeNode
 {
-  
+
   private BehaviourTreeNode[] actionArray;
 
   public SequencerNode(BehaviourTreeNode[] actionArray)
@@ -12,12 +12,11 @@ public class SequencerNode : BehaviourTreeNode
     this.actionArray = actionArray;
   }
 
-  public void Execute(BehaviourTreeInstance behaviourTreeInstance)
+  public ExecutionResult Execute(BehaviourTreeInstance behaviourTreeInstance)
   {
-    var state = behaviourTreeInstance.NodeAndState[this];
-
     behaviourTreeInstance.NodeAndState[this] = BehaviourTreeInstance.NodeState.STATE_WAITING;
     behaviourTreeInstance.NodeAndState[actionArray[0]] = BehaviourTreeInstance.NodeState.STATE_TO_BE_STARTED;
+    return new ExecutionResult(true);
   }
 
   public bool IsConditional()
@@ -28,5 +27,5 @@ public class SequencerNode : BehaviourTreeNode
   public List<BehaviourTreeNode> Children()
   {
     return actionArray.ToList();
-  } 
+  }
 }

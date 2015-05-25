@@ -3,32 +3,32 @@ using System.Collections.Generic;
 
 public class SelectorNode : BehaviourTreeNode
 {
-  Func<BehaviourTreeInstance, Boolean> conditionFunction;
+  Func<BehaviourTreeInstance, ExecutionResult> conditionFunction;
   BehaviourTreeNode actionIfTrue;
   BehaviourTreeNode actionIfFalse;
 
-  public SelectorNode(Func<BehaviourTreeInstance,Boolean> conditionFunction, BehaviourTreeNode actionIfTrue, BehaviourTreeNode actionIfFalse)
+  public SelectorNode(Func<BehaviourTreeInstance, ExecutionResult> conditionFunction, BehaviourTreeNode actionIfTrue, BehaviourTreeNode actionIfFalse)
   {
     this.conditionFunction = conditionFunction;
     this.actionIfTrue = actionIfTrue;
     this.actionIfFalse = actionIfFalse;
   }
 
-  public void Execute(BehaviourTreeInstance behaviourTreeInstance)
+  public ExecutionResult Execute(BehaviourTreeInstance behaviourTreeInstance)
   {
     var state = behaviourTreeInstance.NodeAndState[this];
 
     if (state == BehaviourTreeInstance.NodeState.STATE_EXECUTING)
-      return;
+      return new ExecutionResult(true);
 
     if (state == BehaviourTreeInstance.NodeState.STATE_COMPUTE_RESULT)
     {
 
-      var result = conditionFunction(behaviourTreeInstance);
+      ExecutionResult result = conditionFunction(behaviourTreeInstance);
       
       behaviourTreeInstance.NodeAndState[this] = BehaviourTreeInstance.NodeState.STATE_WAITING;
 
-      if (result)
+      if (result.BooleanResult)
       {
         behaviourTreeInstance.NodeAndState[actionIfTrue] = BehaviourTreeInstance.NodeState.STATE_TO_BE_STARTED;
         behaviourTreeInstance.NodeAndState[actionIfFalse] = BehaviourTreeInstance.NodeState.STATE_DISCARDED;
@@ -42,8 +42,9 @@ public class SelectorNode : BehaviourTreeNode
     }
     else
     {
-      conditionFunction(behaviourTreeInstance);
+      return conditionFunction(behaviourTreeInstance);
     }
+    return new ExecutionResult(true);
   }
 
   public bool IsConditional()

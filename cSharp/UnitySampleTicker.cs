@@ -6,21 +6,20 @@ using UnityEngine;
 
 class UnitySampleTicker : MonoBehaviour
 {
-  private Examples exs;
+  private BehaviourTreeInstance bti;
   float lastTickedOn;
-
   
-  void Awake()
+  void Start()
   {
-    exs = Examples.Exemplify();
+    bti = Examples.Exemplify();
   }
-
+  
   void Update()
   {
-    if (Time.time - lastTickedOn > .3f)
+    if (Time.time - lastTickedOn > 1f)
     {
       lastTickedOn = Time.time;
-      //exs.root.Execute(exs.Actor);
+      bti.ExecuteBehaviourTree();
     }
   }
 }

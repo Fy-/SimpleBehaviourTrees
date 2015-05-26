@@ -1,5 +1,5 @@
 # SimpleBehaviourTrees
-A very simple implementation of behaviour trees in Javascript and C#
+A very simple implementation of behaviour trees in Javascript and C# (C# translation is not complete yet).
 
 We tried to keep things really as simple as possible. 
 There is an example that simply runs in your browser. 

@@ -9,21 +9,24 @@ public class Examples
   public BehaviourTreeNode root;
   //public Actor Actor;
 
-  public static Examples Exemplify()
+  public static BehaviourTreeInstance Exemplify()
   {
     Examples exs = new Examples();
-    /*Policeman p = new Policeman();
-    PolicemanManager pm = Poli
-    exs.Actor = p;
+    Policeman p = new Policeman();
+    PoliceManager pm = new PoliceManager();
+    
+    	var patrollingPoliceBehaviourTreeTwoResults =
+			(new SelectorNode(
+							pm.IfChaseGotKid,
+							new ActionNode(pm.ActionBringChildToStation),
+              new SequencerNode(new BehaviourTreeNode[] {
+                new ActionNode(pm.ActionWander), new ActionNode(pm.ActionSmoke)
+              })
+					)
+    );
 
-    exs.root = new SelectorNode(
-      Policeman.IsCriminalInSight,
-      //new SelectorNode(p.RunAfterCriminal,new ActionNode(p.GotFellow),new ActionNode(p.EscapedFellow)),
-      new ActionNode(Policeman.RunAfterCriminal),
-      new ActionNode(Policeman.SmokeWeed)
-      );*/
-
-    return exs;
+    BehaviourTreeInstance instance = new BehaviourTreeInstance(patrollingPoliceBehaviourTreeTwoResults, p, 1);
+    return instance;
   }
 
   public static void LogSomewhere(string text)

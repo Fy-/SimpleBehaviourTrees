@@ -4,7 +4,6 @@ using System.Linq;
 
 public class SequencerNode : BehaviourTreeNode
 {
-
   private BehaviourTreeNode[] actionArray;
 
   public SequencerNode(BehaviourTreeNode[] actionArray)

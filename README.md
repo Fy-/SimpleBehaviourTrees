@@ -18,4 +18,4 @@ Any implementation of behaviour trees makes sense in an asynchronous contexts wh
 For Javascript, just launch a brower on demo.html. For C#, in Unity create two game objects, on the first "Ticker" add the script UnitySampleTicker, on the second "PoliceManager" add the script PoliceManager, and then on the game object Ticker drag PoliceManager objct as value of Pm property. Run Unity and check the console log.
 
 
-By Pietro Polsinelli @ppolsinelli and Matteo Bicocchi @pupunzi on Twitter.
+By Pietro Polsinelli [@ppolsinelli](https://twitter.com/ppolsinelli) and Matteo Bicocchi [@pupunzi](https://twitter.com/pupunzi) on Twitter.

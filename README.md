@@ -1,4 +1,7 @@
 # SimpleBehaviourTrees
+
+*Very very alpha version: it runs, is being tested on more complex cases, will improve*
+
 A very simple implementation of behaviour trees in Javascript and C#.
 
 We tried to keep things really as simple as possible. 

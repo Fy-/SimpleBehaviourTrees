@@ -5,7 +5,11 @@ using System.Linq;
 public class SelectorWeightedRandomArrayNode : BehaviourTreeNode
 {
   /// <summary>
-  /// Here the sum of 
+  /// Here the sum of likelihoods must be one - don't cheat
+  /// Example:
+  /// Lazy around .7
+  /// Pretend to work .2
+  /// Actually work .1
   /// </summary>
   private Dictionary<float, BehaviourTreeNode> actionArrayAndLikelihood;
 

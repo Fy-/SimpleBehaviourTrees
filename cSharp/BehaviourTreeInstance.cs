@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using Debug = UnityEngine.Debug;
-
 
 public class BehaviourTreeInstance
 {
@@ -23,8 +21,7 @@ public class BehaviourTreeInstance
   private int numberOfLoops;
   private int numberOfRuns = 0;
   private bool completed = false;
-
-
+  
   public Dictionary<BehaviourTreeNode, NodeState> NodeAndState =
     new Dictionary<BehaviourTreeNode, NodeState>();
 
@@ -63,16 +60,12 @@ public class BehaviourTreeInstance
 
   public void WaitUntil(Action callback)
   {
-    Debug.Log("called wait until");
     NodeAndState[node] = NodeState.STATE_EXECUTING;
-    Debug.Log("about to call callback "+callback);
     callback();
-    Debug.Log("called callback");
-  }
+   }
 
   public ExecutionResult ExecuteBehaviourTree()
   {
-
     if (completed)
     {
       return new ExecutionResult(true);
@@ -89,13 +82,11 @@ public class BehaviourTreeInstance
       {
         NodeAndState = new Dictionary<BehaviourTreeNode, NodeState>();
         currentNode = FindCurrentNode(node);
-        Debug.Log("current node is "+currentNode);
-      }
+       }
       else
       {
         completed = true;
-        Debug.Log("completed");
-        return new ExecutionResult(true);
+       return new ExecutionResult(true);
       }
     }
 
@@ -112,19 +103,15 @@ public class BehaviourTreeInstance
     if (toBeStarted)
     {
       currentNode.Execute(this);
-      Debug.Log("executing node: "+currentNode);
       var afterState = NodeAndState[currentNode];
-      Debug.Log("afterState: " + afterState);
       
       if (afterState == BehaviourTreeInstance.NodeState.STATE_TO_BE_STARTED)
         NodeAndState[currentNode] = BehaviourTreeInstance.NodeState.STATE_WAITING;
-      Debug.Log("after afterState: " + NodeAndState[currentNode]);
-      return new ExecutionResult(true);
+     return new ExecutionResult(true);
     }
 
     NodeState state = NodeAndState[currentNode];
-    Debug.Log("state: " + state);
-    
+   
     if (state == BehaviourTreeInstance.NodeState.STATE_COMPUTE_RESULT)
     {
       ExecutionResult result = currentNode.Execute(this);
@@ -174,7 +161,6 @@ public class BehaviourTreeInstance
     }
     return null;
   }
-
 
 }
 

@@ -11,7 +11,6 @@ using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
 using UnityEngine;
 
-
 public class PoliceManager : MonoBehaviour
 {
   private static int totalKidsWondering = 20;
@@ -23,18 +22,12 @@ public class PoliceManager : MonoBehaviour
     {
       Debug.Log("running after kid");
 
-      /*instance.WaitUntil(() =>
-      {
-        DoNap(instance);
-      });*/
-
       instance.WaitUntil(() =>
       {
-        //POINT
-        //SimpleDoNap(instance);
+        // Here we are using Unity's implementation of asynchronous calls.
+        // You will have to use a different one in different contexts.
         StartCoroutine(DoNap(instance));
-        ;
-      });
+        });
 
     }
     else if (instance.HasToComplete())
@@ -56,57 +49,30 @@ public class PoliceManager : MonoBehaviour
 
   public static IEnumerator DoNap(BehaviourTreeInstance behaviourTreeInstanceState, Action callback = null)
   {
-    Debug.Log(" DoNap entered");
     yield return new WaitForSeconds(3f);
-    Debug.Log(" DoNap entered 2");
     behaviourTreeInstanceState.CompletedAsync();
-    Debug.Log(" DoNap entered 3");
 
     if (callback != null)
       callback();
-  }
-
-  public void SimpleDoNap(BehaviourTreeInstance behaviourTreeInstanceState)
-  {
-    
-    /*if (startedNappingAt == 0)
-    {
-      startedNappingAt = Time.time;
-      Debug.Log("started napping");
-    } 
-
-    if (Time.time - startedNappingAt > 3)
-    {
-      behaviourTreeInstanceState.CompletedAsync();
-      Debug.Log("completed napping");
-    }
-    else
-    {
-      Debug.Log("still napping");
-    }*/
-    //DoNap(behaviourTreeInstanceState);
   }
 
   public ExecutionResult IfChaseGotKidCases(BehaviourTreeInstance instance)
   {
     if (instance.HasToStart())
     {
-
       Debug.Log("running after kid");
       instance.WaitUntil(() =>
       {
-        DoNap(instance);
+        StartCoroutine(DoNap(instance));
       });
 
     }
     else if (instance.HasToComplete())
     {
-
       var random = Random.Range(0, 1);
       var b = random > 0.6 ? 2 : (random > 0.3 ? 1 : 0);
       Debug.Log(instance.actor.Name + ": " + " got child: " + b);
       return new ExecutionResult(b);
-
     }
     else
     {
@@ -121,11 +87,11 @@ public class PoliceManager : MonoBehaviour
     {
       Debug.Log(instance.actor.Name + ": " + "Bring child to station");
 
-      DoNap(instance, () =>
+      StartCoroutine(DoNap(instance, () =>
       {
         Debug.Log("child in station");
         totalKidsWondering--;
-      });
+      }));
     }
     return new ExecutionResult(true);
   }

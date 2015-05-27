@@ -9,11 +9,13 @@ using UnityEngine;
 // Change this if not using Unity
 using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
+using UnityEngine;
 
 
-public class PoliceManager
+public class PoliceManager : MonoBehaviour
 {
   private static int totalKidsWondering = 20;
+  private float startedNappingAt =0;
 
   public ExecutionResult IfChaseGotKid(BehaviourTreeInstance instance)
   {
@@ -29,7 +31,9 @@ public class PoliceManager
       instance.WaitUntil(() =>
       {
         //POINT
-        instance.CompletedAsync();
+        //SimpleDoNap(instance);
+        StartCoroutine(DoNap(instance));
+        ;
       });
 
     }
@@ -52,18 +56,35 @@ public class PoliceManager
 
   public static IEnumerator DoNap(BehaviourTreeInstance behaviourTreeInstanceState, Action callback = null)
   {
-    Debug.Log("entered");
+    Debug.Log(" DoNap entered");
     yield return new WaitForSeconds(3f);
+    Debug.Log(" DoNap entered 2");
     behaviourTreeInstanceState.CompletedAsync();
+    Debug.Log(" DoNap entered 3");
+
     if (callback != null)
       callback();
   }
 
-  public static IEnumerator SimpleDoNap(BehaviourTreeInstance behaviourTreeInstanceState)
+  public void SimpleDoNap(BehaviourTreeInstance behaviourTreeInstanceState)
   {
-    Debug.Log("entered SimpleDoNap ");
-    //yield return new WaitForSeconds(3f);
-    behaviourTreeInstanceState.CompletedAsync();
+    
+    /*if (startedNappingAt == 0)
+    {
+      startedNappingAt = Time.time;
+      Debug.Log("started napping");
+    } 
+
+    if (Time.time - startedNappingAt > 3)
+    {
+      behaviourTreeInstanceState.CompletedAsync();
+      Debug.Log("completed napping");
+    }
+    else
+    {
+      Debug.Log("still napping");
+    }*/
+    //DoNap(behaviourTreeInstanceState);
   }
 
   public ExecutionResult IfChaseGotKidCases(BehaviourTreeInstance instance)

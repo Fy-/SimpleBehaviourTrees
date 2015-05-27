@@ -8,10 +8,12 @@ class UnitySampleTicker : MonoBehaviour
 {
   private BehaviourTreeInstance bti;
   float lastTickedOn;
+  public PoliceManager pm;
+
   
   void Start()
   {
-    bti = Examples.Exemplify();
+    bti = Examples.Exemplify(pm);
   }
   
   void Update()

@@ -7,13 +7,13 @@ using Debug = UnityEngine.Debug;
 public class Examples
 {
   public BehaviourTreeNode root;
-  //public Actor Actor;
+  
 
-  public static BehaviourTreeInstance Exemplify()
+  public static BehaviourTreeInstance Exemplify(PoliceManager pm)
   {
     Examples exs = new Examples();
     Policeman p = new Policeman();
-    PoliceManager pm = new PoliceManager();
+    
     
     	var patrollingPoliceBehaviourTreeTwoResults =
 			(new SelectorNode(

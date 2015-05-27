@@ -69,7 +69,7 @@ public class PoliceManager : MonoBehaviour
     }
     else if (instance.HasToComplete())
     {
-      var random = Random.Range(0, 1);
+      var random = Random.Range(0f, 1f);
       var b = random > 0.6 ? 2 : (random > 0.3 ? 1 : 0);
       Debug.Log(instance.actor.Name + ": " + " got child: " + b);
       return new ExecutionResult(b);

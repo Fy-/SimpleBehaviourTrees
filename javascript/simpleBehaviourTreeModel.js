@@ -362,9 +362,14 @@ function SelectorRandomNode(actionArray) {
 };
 // SelectorRandom model and implementation - END
 
-// SelectorRandom model and implementation - BEGIN
+// SelectorWeightedRandomNode model and implementation - BEGIN
 /**
- * This is a cool extension of selector that executes randomly one of the actions in the array.
+ * Example:
+ * [
+ * [0.7 Lazy around]
+ * [0.2 Pretend to work]
+ * [0.1 Actually work]
+ * ]
  */
 function SelectorWeightedRandomNode(weightsActionMap) {
 
@@ -377,9 +382,8 @@ function SelectorWeightedRandomNode(weightsActionMap) {
         if (state == BehaviourTreeInstance.STATE_EXECUTING)
             return;
 
-
         var action = chooseByRandom(this.weightsActionMap);
-        console.debug("randomIndex", this.weightsActionMap, action);
+        //console.debug("randomIndex", this.weightsActionMap, action);
 
         behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_WAITING, this);
 
@@ -404,11 +408,20 @@ function SelectorWeightedRandomNode(weightsActionMap) {
     };
 
 };
-// SelectorRandom model and implementation - END
+// SelectorWeightedRandomNode model and implementation - END
 
 // SelectorRandomProbability model and implementation - BEGIN
 /**
- * This is a cool extension of selector that executes randomly one of the actions in the array.
+ * This node executes randomly one of the nodes on the base of the probability assigned to the node,
+ * but to make it easier to write and modify the probability is assigned as an integer value.
+ * The node will normalize the values in a [0,1] interval.
+ * Example:
+ * [
+ * [100 Lazy around]
+ * [22 Pretend to work]
+ * [1 Actually work]
+ * ]
+ *
  */
 function SelectorRandomProbabilityNode(probabilityActionMap) {
 
@@ -449,9 +462,6 @@ function SelectorRandomProbabilityNode(probabilityActionMap) {
 
 };
 // SelectorRandomProbability model and implementation - END
-
-
-
 
 // SequencerRandom model and implementation - BEGIN
 /**

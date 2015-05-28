@@ -18,14 +18,12 @@ function writeOnConsole(text){
 	var textnode = document.createTextNode(text);         // Create a text node
 	node.appendChild(textnode);                              // Append the text to <li>
 	document.getElementById("console").appendChild(node);     // Append <li> to <ul> with id="myList"
-
+//	console.debug(text)
 }
 
+var totalKidsWondering = 20;
 
 function example() {
-
-	var totalKidsWondering = 20;
-
 	/**
 	 *  PolicemanManager is like a static instance that processes actions on a given actor
 	 *  through a behaviour tree instance.
@@ -148,6 +146,15 @@ function example() {
 					new ActionNode(PolicemanManager.actionSmoke)
 			));
 
+	var patrollingPoliceBehaviourSimpleTreeTwoResults =
+			(new
+					SelectorNode(
+					new ActionNode(PolicemanManager.ifKidInSight),
+					new ActionNode(PolicemanManager.actionWanderAround),
+
+					new ActionNode(PolicemanManager.actionSmoke)
+			));
+
 	var patrollingPoliceBehaviourTreeRandomWeightedResults =
 			( new SelectorWeightedRandomNode(
 					[
@@ -197,7 +204,8 @@ function example() {
 	policeman1.name = "Bobby";
 	policeman1.haveBeenChasing=0;
 
-	var bti1 = new BehaviourTreeInstance(patrollingPoliceBehaviourTreeTwoResults,policeman1,0);
+//	var bti1 = new BehaviourTreeInstance(patrollingPoliceBehaviourSimpleTreeTwoResults,policeman1,1);
+	var bti1 = new BehaviourTreeInstance(patrollingPoliceBehaviourTreeTwoResults,policeman1,1);
 
 	tick(bti1);
 

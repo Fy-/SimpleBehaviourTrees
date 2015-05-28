@@ -17,7 +17,7 @@
  */
 function BehaviourTreeInstance(behaviourTree, actor, numberOfLoops) {
 
-    if (!numberOfLoops)
+    if (typeof numberOfLoops == "undefined")
         numberOfLoops = 1;
 
     this.behaviourTree = behaviourTree;
@@ -376,20 +376,25 @@ function SelectorWeightedRandomNode(weightsActionMap) {
             return;
 
 
-        var randomIndex = Math.floor(Math.random() * actionArray.length);
-        console.debug("randomIndex", randomIndex);
+        var action = chooseByRandom(this.weightsActionMap);
+        console.debug("randomIndex", this.weightsActionMap, action);
+
         behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_WAITING, this);
 
-        for (var j = 0; j < actionArray.length; j++) {
-            if (j == randomIndex)
-                behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_TO_BE_STARTED, actionArray[j]);
+        for (var j = 0; j < this.weightsActionMap.length; j++) {
+            if (this.weightsActionMap[j][1] == action)
+                behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_TO_BE_STARTED, action);
             else
-                behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_DISCARDED, actionArray[j]);
+                behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_DISCARDED, this.weightsActionMap[j][1]);
         }
     };
 
     this.children = function () {
-        return actionArray;
+	    var actionArray=[];
+	    for (var j = 0; j < this.weightsActionMap.length; j++) {
+		    actionArray.push(this.weightsActionMap[j][1]);
+	    }
+	    return actionArray;
     };
 
     this.isConditional = function () {
@@ -457,15 +462,15 @@ function shuffle(array) {
     return array;
 }
 
-function ChooseByRandom(weightsActionMap)
-{
+function chooseByRandom(weightsActionMap) {
     var rnd = Math.random();
-    foreach (var item in collection)
-    {
-        if (rnd < item.Key)
-            return item.Value;
-        rnd -= item.Key;
+    for(var item in weightsActionMap) {
+
+	    var actionMap = weightsActionMap[item];
+	    console.debug(rnd, actionMap)
+        if (rnd < actionMap[0])
+            return actionMap[1];
+        rnd -= actionMap[0];
     }
-    throw new InvalidOperationException(
-        "The proportions in the collection do not add up to 1.");
+    throw new Error("The proportions in the collection do not add up to 1.");
 }

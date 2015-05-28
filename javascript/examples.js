@@ -197,7 +197,7 @@ function example() {
 	policeman1.name = "Bobby";
 	policeman1.haveBeenChasing=0;
 
-	var bti1 = new BehaviourTreeInstance(patrollingPoliceBehaviourTreeRandomProbabilityResults,policeman1,0);
+	var bti1 = new BehaviourTreeInstance(patrollingPoliceBehaviourTreeTwoResults,policeman1,0);
 
 	tick(bti1);
 

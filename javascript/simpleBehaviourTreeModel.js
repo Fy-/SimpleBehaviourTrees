@@ -15,6 +15,7 @@
  * @param numberOfLoops 0 forever
  * @constructor
  */
+
 function BehaviourTreeInstance(behaviourTree, actor, numberOfLoops) {
 
     if (typeof numberOfLoops == "undefined")

@@ -406,6 +406,49 @@ function SelectorWeightedRandomNode(weightsActionMap) {
 };
 // SelectorRandom model and implementation - END
 
+// SelectorRandomProbability model and implementation - BEGIN
+/**
+ * This is a cool extension of selector that executes randomly one of the actions in the array.
+ */
+function SelectorRandomProbabilityNode(probabilityActionMap) {
+
+	this.weightsActionMap = probabilityActionMap;
+
+	this.execute = function (behaviourTreeInstanceState) {
+
+		var state = behaviourTreeInstanceState.findStateForNode(this);
+
+		if (state == BehaviourTreeInstance.STATE_EXECUTING)
+			return;
+
+
+		var action = chooseByProbability(this.weightsActionMap);
+		console.debug("randomIndex", this.weightsActionMap, action);
+
+		behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_WAITING, this);
+
+		for (var j = 0; j < this.weightsActionMap.length; j++) {
+			if (this.weightsActionMap[j][1] == action)
+				behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_TO_BE_STARTED, action);
+			else
+				behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_DISCARDED, this.weightsActionMap[j][1]);
+		}
+	};
+
+	this.children = function () {
+		var actionArray=[];
+		for (var j = 0; j < this.weightsActionMap.length; j++) {
+			actionArray.push(this.weightsActionMap[j][1]);
+		}
+		return actionArray;
+	};
+
+	this.isConditional = function () {
+		return false;
+	};
+
+};
+// SelectorRandomProbability model and implementation - END
 
 
 
@@ -475,4 +518,22 @@ function chooseByRandom(weightsActionMap) {
         rnd -= actionMap[0];
     }
     throw new Error("The proportions in the collection do not add up to 1.");
+}
+
+function chooseByProbability(pointActionMap) {
+
+	var weightsActionMap = [];
+
+	var totalPoints = 0;
+	for (var point in pointActionMap){
+		totalPoints += pointActionMap[point][0];
+	}
+
+	var unit = 1/totalPoints;
+
+	for (var point in pointActionMap){
+		weightsActionMap.push([pointActionMap[point][0] * unit, pointActionMap[point][1]]);
+	}
+
+	return chooseByRandom(weightsActionMap);
 }

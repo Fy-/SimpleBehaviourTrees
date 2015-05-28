@@ -156,6 +156,14 @@ function example() {
 					]
 			));
 
+	var patrollingPoliceBehaviourTreeRandomProbabilityResults =
+			( new SelectorRandomProbabilityNode(
+					[
+						[22, new ActionNode(PolicemanManager.actionSmoke)],
+						[100, new ActionNode(PolicemanManager.actionWanderAround)]
+					]
+			));
+
 	var patrollingPoliceBehaviourTreeMultiResults =
 			new SelectorArrayNode(
 					new ActionNode(PolicemanManager.ifChaseGotKidCases),
@@ -189,10 +197,9 @@ function example() {
 	policeman1.name = "Bobby";
 	policeman1.haveBeenChasing=0;
 
-	var bti1 = new BehaviourTreeInstance(patrollingPoliceBehaviourTreeRandomWeightedResults,policeman1,0);
+	var bti1 = new BehaviourTreeInstance(patrollingPoliceBehaviourTreeRandomProbabilityResults,policeman1,0);
 
 	tick(bti1);
-
 
 	/*	var policeman2 = {};
 	 policeman2.name = "Jimmy";

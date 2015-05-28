@@ -360,6 +360,48 @@ function SelectorRandomNode(actionArray) {
 };
 // SelectorRandom model and implementation - END
 
+// SelectorRandom model and implementation - BEGIN
+/**
+ * This is a cool extension of selector that executes randomly one of the actions in the array.
+ */
+function SelectorWeightedRandomNode(weightsActionMap) {
+
+    this.weightsActionMap = weightsActionMap;
+
+    this.execute = function (behaviourTreeInstanceState) {
+
+        var state = behaviourTreeInstanceState.findStateForNode(this);
+
+        if (state == BehaviourTreeInstance.STATE_EXECUTING)
+            return;
+
+
+        var randomIndex = Math.floor(Math.random() * actionArray.length);
+        console.debug("randomIndex", randomIndex);
+        behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_WAITING, this);
+
+        for (var j = 0; j < actionArray.length; j++) {
+            if (j == randomIndex)
+                behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_TO_BE_STARTED, actionArray[j]);
+            else
+                behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_DISCARDED, actionArray[j]);
+        }
+    };
+
+    this.children = function () {
+        return actionArray;
+    };
+
+    this.isConditional = function () {
+        return false;
+    };
+
+};
+// SelectorRandom model and implementation - END
+
+
+
+
 
 // SequencerRandom model and implementation - BEGIN
 /**
@@ -413,4 +455,17 @@ function shuffle(array) {
     }
 
     return array;
+}
+
+function ChooseByRandom(weightsActionMap)
+{
+    var rnd = Math.random();
+    foreach (var item in collection)
+    {
+        if (rnd < item.Key)
+            return item.Value;
+        rnd -= item.Key;
+    }
+    throw new InvalidOperationException(
+        "The proportions in the collection do not add up to 1.");
 }

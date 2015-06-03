@@ -26,14 +26,13 @@ public class PoliceManager : MonoBehaviour
       {
         // Here we are using Unity's implementation of asynchronous calls.
         // You will have to use a different one in different contexts.
-        StartCoroutine(DoNap(instance));
+        StartCoroutine(Chasing(instance));
         });
 
     }
     else if (instance.HasToComplete())
     {
-
-      var b = Random.Range(0, 1) > 0.5;
+      bool b = Random.Range(0f, 1f) > 10.01;
       Debug.Log(instance.actor.Name + ": " + " got child: " + b);
       return new ExecutionResult(b);
 
@@ -50,6 +49,16 @@ public class PoliceManager : MonoBehaviour
   public static IEnumerator DoNap(BehaviourTreeInstance behaviourTreeInstanceState, Action callback = null)
   {
     yield return new WaitForSeconds(3f);
+    behaviourTreeInstanceState.CompletedAsync();
+
+    if (callback != null)
+      callback();
+  }
+
+  public static IEnumerator Chasing(BehaviourTreeInstance behaviourTreeInstanceState, Action callback = null)
+  {
+    yield return new WaitForSeconds(3f);
+    Debug.Log("End chase");
     behaviourTreeInstanceState.CompletedAsync();
 
     if (callback != null)
@@ -87,11 +96,16 @@ public class PoliceManager : MonoBehaviour
     {
       Debug.Log(instance.actor.Name + ": " + "Bring child to station");
 
-      StartCoroutine(DoNap(instance, () =>
+      instance.WaitUntil(() =>
       {
-        Debug.Log("child in station");
-        totalKidsWondering--;
-      }));
+        // Here we are using Unity's implementation of asynchronous calls.
+        // You will have to use a different one in different contexts.
+        StartCoroutine(DoNap(instance, () =>
+        {
+          Debug.Log("child in station");
+          totalKidsWondering--;
+        }));
+      });
     }
     return new ExecutionResult(true);
   }

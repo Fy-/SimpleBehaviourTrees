@@ -22,6 +22,9 @@ class UnitySampleTicker : MonoBehaviour
     {
       lastTickedOn = Time.time;
       bti.ExecuteBehaviourTree();
+      if (bti.Completed)
+        Debug.Log("BT END");
+      Debug.Log("ticked "+Time.time);
     }
   }
 }

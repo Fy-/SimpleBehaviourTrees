@@ -20,7 +20,7 @@ public class BehaviourTreeInstance
   public Actor actor;
   private int numberOfLoops;
   private int numberOfRuns = 0;
-  private bool completed = false;
+  public bool Completed = false;
   
   public Dictionary<BehaviourTreeNode, NodeState> NodeAndState =
     new Dictionary<BehaviourTreeNode, NodeState>();
@@ -50,6 +50,7 @@ public class BehaviourTreeInstance
   {
     if (this.currentNode.IsConditional())
     {
+      Debug.WriteLine("CompletedAsync for node "+node);
       NodeAndState[node] = NodeState.STATE_COMPUTE_RESULT;
     }
     else
@@ -66,7 +67,7 @@ public class BehaviourTreeInstance
 
   public ExecutionResult ExecuteBehaviourTree()
   {
-    if (completed)
+    if (Completed)
     {
       return new ExecutionResult(true);
     }
@@ -77,15 +78,14 @@ public class BehaviourTreeInstance
     if (currentNode == null)
     {
       numberOfRuns++;
-      if (numberOfLoops == 0 ||
-          numberOfRuns < numberOfLoops)
+      if (numberOfLoops == 0 || numberOfRuns < numberOfLoops)
       {
         NodeAndState = new Dictionary<BehaviourTreeNode, NodeState>();
         currentNode = FindCurrentNode(node);
        }
       else
       {
-        completed = true;
+        Completed = true;
        return new ExecutionResult(true);
       }
     }
@@ -102,12 +102,12 @@ public class BehaviourTreeInstance
 
     if (toBeStarted)
     {
-      currentNode.Execute(this);
+      ExecutionResult result = currentNode.Execute(this);
       var afterState = NodeAndState[currentNode];
       
       if (afterState == BehaviourTreeInstance.NodeState.STATE_TO_BE_STARTED)
-        NodeAndState[currentNode] = BehaviourTreeInstance.NodeState.STATE_WAITING;
-     return new ExecutionResult(true);
+        NodeAndState[currentNode] = BehaviourTreeInstance.NodeState.STATE_COMPLETED;
+     return result;
     }
 
     NodeState state = NodeAndState[currentNode];

@@ -251,9 +251,9 @@ function SelectorNode(conditionFunction, actionIfTrue, actionIfFalse) {
 			return;
 
 		} else {
+			//			In both cases Sync and Async
 			var result = this.conditionFunction(behaviourTreeInstanceState);
 			console.debug("SelectorNode result", result);
-//			behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_WAITING, this);
 
 			console.debug("nodeAndState 1:: ", behaviourTreeInstanceState.nodeAndState);
 

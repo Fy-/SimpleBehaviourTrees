@@ -84,6 +84,8 @@ function BehaviourTreeInstance(behaviourTree, actor, numberOfLoops) {
 	 * This is the function that crawls the behaviour tree instance you pass to it
 	 * and calls the executors if the the argument is a node of some kind,
 	 * calls it as an action otherwise.
+     *
+     * The same node may
 	 */
 	this.executeBehaviourTree = function () {
 
@@ -107,7 +109,7 @@ function BehaviourTreeInstance(behaviourTree, actor, numberOfLoops) {
 		}
 
 		var state = this.findStateForNode(this.currentNode);
-		console.debug("state", state);
+		//console.debug("state", state);
 
 		if (state == null || state == BehaviourTreeInstance.STATE_TO_BE_STARTED) {
 
@@ -135,8 +137,6 @@ function BehaviourTreeInstance(behaviourTree, actor, numberOfLoops) {
 			this.setState(BehaviourTreeInstance.STATE_COMPLETED);
 			return result;
 		}
-
-		//console.debug("state-1", state);
 	};
 
 	this.findCurrentNode = function(node) {

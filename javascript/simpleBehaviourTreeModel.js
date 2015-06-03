@@ -85,13 +85,14 @@ function BehaviourTreeInstance(behaviourTree, actor, numberOfLoops) {
 	 * and calls the executors if the the argument is a node of some kind,
 	 * calls it as an action otherwise.
      *
-     * The same node may
+     * The same node may be called to execute twice, once for starting it and on a subsequent tick for completion.
 	 */
 	this.executeBehaviourTree = function () {
 
+        writeOnConsole("ticking on "+this.currentNode);
+
 		if (this.finished)
 			return;
-
 
 		//find current node to be executed, or a running one, or root to launch, or root completed
 		this.currentNode = this.findCurrentNode(this.behaviourTree);
@@ -113,21 +114,19 @@ function BehaviourTreeInstance(behaviourTree, actor, numberOfLoops) {
 
 		if (state == null || state == BehaviourTreeInstance.STATE_TO_BE_STARTED) {
 
-			if (!this.currentNode.isConditional())
-				this.currentNode.execute(this);
+			//if (!this.currentNode.isConditional())
+
+            //first call to execute: may go into:
+            // STATE_WAITING (asynch,
+            // STATE_COMPUTE_RESULT (perform on second call) or
+            // STATE_COMPLETED
+			this.currentNode.execute(this);
 
 			var afterState = this.findStateForNode(this.currentNode);
 
-			if (afterState == BehaviourTreeInstance.STATE_TO_BE_STARTED){
-				if (this.currentNode.isConditional())
-					this.setState(BehaviourTreeInstance.STATE_COMPUTE_RESULT);
-				else
-					this.setState(BehaviourTreeInstance.STATE_WAITING);
-			}
-
-			else if (afterState == null)
+			if (afterState == null || afterState == BehaviourTreeInstance.STATE_TO_BE_STARTED){
 				this.setState(BehaviourTreeInstance.STATE_COMPUTE_RESULT);
-
+			}
 			return;
 		}
 
@@ -212,6 +211,32 @@ function ActionNode(action) {
 
 }
 // Action model and implementation - END
+
+// IfNode model and implementation - BEGIN
+function IfNode(action) {
+    this.action = action;
+
+    this.execute = function (behaviourTreeInstanceState) {
+
+        var state = behaviourTreeInstanceState.findStateForNode(this);
+
+
+        console.debug("actionNode state:: ", state);
+
+        return this.action(behaviourTreeInstanceState);
+    };
+
+    this.children = function () {
+        return null;
+    };
+
+    this.isConditional = function () {
+        return true;
+    };
+
+}
+// IfNode model and implementation - END
+
 
 
 // selector model and implementation - BEGIN

@@ -17,7 +17,7 @@ public class Examples
     
     	var patrollingPoliceBehaviourTreeTwoResults =
 			(new SelectorNode(
-							pm.IfChaseGotKid,
+							new ActionNode(pm.IfChaseGotKid),
 							new ActionNode(pm.ActionBringChildToStation),
               new SequencerNode(new BehaviourTreeNode[] {
                 new ActionNode(pm.ActionWander), new ActionNode(pm.ActionSmoke)

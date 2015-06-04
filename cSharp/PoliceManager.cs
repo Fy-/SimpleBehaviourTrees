@@ -14,7 +14,7 @@ using UnityEngine;
 public class PoliceManager : MonoBehaviour
 {
   private static int totalKidsWondering = 20;
-  private float startedNappingAt =0;
+  private float startedNappingAt = 0;
 
   public ExecutionResult IfChaseGotKid(BehaviourTreeInstance instance)
   {
@@ -27,15 +27,14 @@ public class PoliceManager : MonoBehaviour
         // Here we are using Unity's implementation of asynchronous calls.
         // You will have to use a different one in different contexts.
         StartCoroutine(Chasing(instance));
-        });
+      });
 
     }
     else if (instance.HasToComplete())
     {
-      bool b = Random.Range(0f, 1f) > 0.01;
+      bool b = Random.Range(0f, 1f) > 0.49;
       Debug.Log(instance.actor.Name + ": " + " got child: " + b);
       return new ExecutionResult(b);
-
     }
     else
     {

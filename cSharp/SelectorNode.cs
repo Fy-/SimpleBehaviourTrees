@@ -7,7 +7,8 @@ public class SelectorNode : BehaviourTreeNode
   BehaviourTreeNode actionIfTrue;
   BehaviourTreeNode actionIfFalse;
 
-  public SelectorNode(Func<BehaviourTreeInstance, ExecutionResult> conditionFunction, BehaviourTreeNode actionIfTrue, BehaviourTreeNode actionIfFalse)
+  public SelectorNode(Func<BehaviourTreeInstance, ExecutionResult> conditionFunction,
+    BehaviourTreeNode actionIfTrue, BehaviourTreeNode actionIfFalse)
   {
     this.conditionFunction = conditionFunction;
     this.actionIfTrue = actionIfTrue;
@@ -21,30 +22,23 @@ public class SelectorNode : BehaviourTreeNode
     if (state == BehaviourTreeInstance.NodeState.STATE_EXECUTING)
       return new ExecutionResult(true);
 
-    if (state == BehaviourTreeInstance.NodeState.STATE_COMPUTE_RESULT)
+    ExecutionResult result = conditionFunction(behaviourTreeInstance);
+
+    if (state == BehaviourTreeInstance.NodeState.STATE_EXECUTING)
+      return new ExecutionResult(true);
+
+    if (result.BooleanResult)
     {
-
-      ExecutionResult result = conditionFunction(behaviourTreeInstance);
-      
-      behaviourTreeInstance.NodeAndState[this] = BehaviourTreeInstance.NodeState.STATE_WAITING;
-
-      if (result.BooleanResult)
-      {
-        behaviourTreeInstance.NodeAndState[actionIfTrue] = BehaviourTreeInstance.NodeState.STATE_TO_BE_STARTED;
-        behaviourTreeInstance.NodeAndState[actionIfFalse] = BehaviourTreeInstance.NodeState.STATE_DISCARDED;
-      }
-      else
-      {
-        behaviourTreeInstance.NodeAndState[actionIfTrue] = BehaviourTreeInstance.NodeState.STATE_DISCARDED;
-        behaviourTreeInstance.NodeAndState[actionIfFalse] = BehaviourTreeInstance.NodeState.STATE_TO_BE_STARTED;
-      }
-
+      behaviourTreeInstance.NodeAndState[actionIfTrue] = BehaviourTreeInstance.NodeState.STATE_TO_BE_STARTED;
+      behaviourTreeInstance.NodeAndState[actionIfFalse] = BehaviourTreeInstance.NodeState.STATE_DISCARDED;
     }
     else
     {
-      return conditionFunction(behaviourTreeInstance);
+      behaviourTreeInstance.NodeAndState[actionIfTrue] = BehaviourTreeInstance.NodeState.STATE_DISCARDED;
+      behaviourTreeInstance.NodeAndState[actionIfFalse] = BehaviourTreeInstance.NodeState.STATE_TO_BE_STARTED;
     }
-    return new ExecutionResult(true);
+
+    return result;
   }
 
   public bool IsConditional()
@@ -54,6 +48,6 @@ public class SelectorNode : BehaviourTreeNode
 
   public List<BehaviourTreeNode> Children()
   {
-    return new List<BehaviourTreeNode> {actionIfTrue, actionIfFalse};
-  } 
+    return new List<BehaviourTreeNode> { actionIfTrue, actionIfFalse };
+  }
 }

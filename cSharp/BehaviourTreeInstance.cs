@@ -46,7 +46,7 @@ public class BehaviourTreeInstance
 
   public bool HasToComplete()
   {
-    NodeState state = NodeAndState[rootNode];
+    NodeState state = NodeAndState[currentNode];
     return state == NodeState.STATE_COMPUTE_RESULT;
   }
 

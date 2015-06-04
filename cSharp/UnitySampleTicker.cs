@@ -18,7 +18,7 @@ class UnitySampleTicker : MonoBehaviour
 
   void Update()
   {
-    if (Time.time - lastTickedOn > 1f)
+    if (Time.time - lastTickedOn > .5f)
     {
       lastTickedOn = Time.time;
       bti.ExecuteBehaviourTree();

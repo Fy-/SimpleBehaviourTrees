@@ -12,7 +12,7 @@ public class Examples
   {
     Policeman p = new Policeman();
 
-    /*var patrollingPoliceBehaviourTreeTwoResults =
+    var patrollingPoliceBehaviourTreeTwoResults =
 
       new SelectorNode(
             pm.IfChaseGotKid,
@@ -20,7 +20,7 @@ public class Examples
             new SequencerNode(new BehaviourTreeNode[] {
                 new ActionNode(pm.ActionWander), new ActionNode(pm.ActionSmoke)
               })
-        );*/
+        );
 
     var patrollingPoliceBehaviourTreeTwoResultsSimple =
 
@@ -30,8 +30,20 @@ public class Examples
             new ActionNode(pm.ActionSmoke)
               );
 
+    var patrollingPoliceBehaviourArrayResults =
+
+      new SelectorArrayNode(
+           pm.IfChaseGotKidCases,
+           new BehaviourTreeNode[] {
+             new ActionNode(pm.ActionBringChildToStation),
+             new ActionNode(pm.ActionWander), 
+             new ActionNode(pm.ActionSmoke)
+           }
+        );
+
     BehaviourTreeInstance instance =
-      new BehaviourTreeInstance(patrollingPoliceBehaviourTreeTwoResultsSimple, p, 1);
+      new BehaviourTreeInstance(patrollingPoliceBehaviourArrayResults, p, 1);
+
     return instance;
   }
 

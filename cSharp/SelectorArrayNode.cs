@@ -7,7 +7,7 @@ public class SelectorArrayNode : BehaviourTreeNode
   Func<BehaviourTreeInstance, ExecutionResult> conditionFunction;
   private BehaviourTreeNode[] actionArray;
 
-  public SelectorArrayNode(Func<BehaviourTreeInstance, ExecutionResult> conditionFunction, 
+  public SelectorArrayNode(Func<BehaviourTreeInstance, ExecutionResult> conditionFunction,
     BehaviourTreeNode[] actionArray)
   {
     this.conditionFunction = conditionFunction;
@@ -21,25 +21,20 @@ public class SelectorArrayNode : BehaviourTreeNode
     if (state == BehaviourTreeInstance.NodeState.STATE_EXECUTING)
       return new ExecutionResult(true);
 
-    if (state == BehaviourTreeInstance.NodeState.STATE_COMPUTE_RESULT)
-    {
-      int resultInt = conditionFunction(behaviourTreeInstance).IntegerResult;
-     
-      behaviourTreeInstance.NodeAndState[this] = BehaviourTreeInstance.NodeState.STATE_WAITING;
+    int resultInt = conditionFunction(behaviourTreeInstance).IntegerResult;
 
-      for (var j = 0; j < actionArray.Count(); j++)
-      {
-        if (j == resultInt)
-          behaviourTreeInstance.NodeAndState[actionArray[j]] = BehaviourTreeInstance.NodeState.STATE_TO_BE_STARTED;
-        else
-          behaviourTreeInstance.NodeAndState[actionArray[j]] = BehaviourTreeInstance.NodeState.STATE_DISCARDED;
-      }
-    }
-    else
+    if (state == BehaviourTreeInstance.NodeState.STATE_EXECUTING)
+      return new ExecutionResult(true);
+
+    for (var j = 0; j < actionArray.Count(); j++)
     {
-      return conditionFunction(behaviourTreeInstance);
+      if (j == resultInt)
+        behaviourTreeInstance.NodeAndState[actionArray[j]] = BehaviourTreeInstance.NodeState.STATE_TO_BE_STARTED;
+      else
+        behaviourTreeInstance.NodeAndState[actionArray[j]] = BehaviourTreeInstance.NodeState.STATE_DISCARDED;
     }
-    return new ExecutionResult(true);
+
+    return new ExecutionResult(resultInt);
   }
 
   public bool IsConditional()
@@ -50,5 +45,5 @@ public class SelectorArrayNode : BehaviourTreeNode
   public List<BehaviourTreeNode> Children()
   {
     return actionArray.ToList();
-  } 
+  }
 }

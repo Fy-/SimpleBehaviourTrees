@@ -86,13 +86,10 @@ function BehaviourTreeInstance(behaviourTree, actor, numberOfLoops) {
 	 * This is the function that crawls the behaviour tree instance you pass to it
 	 * and calls the executors if the the argument is a node of some kind,
 	 * calls it as an action otherwise.
-     *
-     * The same node may be called to execute twice, once for starting it and on a subsequent tick for completion.
+	 *
+	 * The same node may be called to execute twice, once for starting it and on a subsequent tick for completion.
 	 */
 	this.executeBehaviourTree = function () {
-
-		//todo: remove
-		writeOnConsole("ticking on "+this.currentNode);
 
 		if (this.finished)
 			return;
@@ -107,9 +104,6 @@ function BehaviourTreeInstance(behaviourTree, actor, numberOfLoops) {
 				this.currentNode = this.findCurrentNode(this.behaviourTree);
 			} else {
 
-				//todo: remove
-				writeOnConsole(this.actor.name + " has finished.");
-
 				this.finished = true;
 
 				return;
@@ -123,10 +117,10 @@ function BehaviourTreeInstance(behaviourTree, actor, numberOfLoops) {
 
 			//if (!this.currentNode.isConditional())
 
-            //first call to execute: may go into:
-            // STATE_WAITING (asynch,
-            // STATE_COMPUTE_RESULT (perform on second call) or
-            // STATE_COMPLETED
+			//first call to execute: may go into:
+			// STATE_WAITING (asynch,
+			// STATE_COMPUTE_RESULT (perform on second call) or
+			// STATE_COMPLETED
 //			this.currentNode.execute(this);
 			var result = this.currentNode.execute(this);
 
@@ -206,9 +200,6 @@ function ActionNode(action) {
 	this.action = action;
 
 	this.execute = function (behaviourTreeInstanceState) {
-
-		var state = behaviourTreeInstanceState.findStateForNode(this);
-
 		return this.action(behaviourTreeInstanceState);
 	};
 
@@ -223,6 +214,30 @@ function ActionNode(action) {
 }
 // Action model and implementation - END
 
+
+// Action model and implementation - BEGIN
+/**
+ * This simply creates a wrapper node for any specific action.
+ * The wrapper is necessary in order to have a uniform "execute"
+ * method to be called by the engine.
+ */
+function IfNode(action) {
+	this.action = action;
+
+	this.execute = function (behaviourTreeInstanceState) {
+		return this.action(behaviourTreeInstanceState);
+	};
+
+	this.children = function () {
+		return null;
+	};
+
+	this.isConditional = function () {
+		return true;
+	};
+
+}
+// Action model and implementation - END
 
 // selector model and implementation - BEGIN
 /**
@@ -244,35 +259,30 @@ function SelectorNode(conditionFunction, actionIfTrue, actionIfFalse) {
 
 		var state = behaviourTreeInstanceState.findStateForNode(this);
 
-		console.debug("state  ", state)
-
-		if (state == BehaviourTreeInstance.STATE_EXECUTING) {
-
+		if (state == BehaviourTreeInstance.STATE_EXECUTING)
 			return;
 
+		//			In both cases Sync and Async
+		var result;
+		if(this.conditionFunction instanceof IfNode){
+			result = this.conditionFunction.execute(behaviourTreeInstanceState);
 		} else {
-			//			In both cases Sync and Async
-			var result = this.conditionFunction(behaviourTreeInstanceState);
-			console.debug("SelectorNode result", result);
-
-			console.debug("nodeAndState 1:: ", behaviourTreeInstanceState.nodeAndState);
-
-			if(state == BehaviourTreeInstance.STATE_EXECUTING)
-				return;
-
-			if (result) {
-				console.debug("case TRUE", result)
-				behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_TO_BE_STARTED, this.actionIfTrue);
-				behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_DISCARDED, this.actionIfFalse);
-			} else {
-				console.debug("case FALSE", result)
-				behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_TO_BE_STARTED, this.actionIfFalse);
-				behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_DISCARDED, this.actionIfTrue);
-			}
-
-			console.debug("nodeAndState 2:: ", behaviourTreeInstanceState.nodeAndState);
+			result = this.conditionFunction(behaviourTreeInstanceState);
 		}
+//		console.debug("SelectorNode result", result);
 
+		if(state == BehaviourTreeInstance.STATE_EXECUTING)
+			return;
+
+		if (result) {
+			console.debug("case TRUE", result)
+			behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_TO_BE_STARTED, this.actionIfTrue);
+			behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_DISCARDED, this.actionIfFalse);
+		} else {
+			console.debug("case FALSE", result)
+			behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_TO_BE_STARTED, this.actionIfFalse);
+			behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_DISCARDED, this.actionIfTrue);
+		}
 
 	};
 
@@ -304,22 +314,24 @@ function SelectorArrayNode(conditionFunction, actionArray) {
 		if (state == BehaviourTreeInstance.STATE_EXECUTING)
 			return;
 
-		if (state == BehaviourTreeInstance.STATE_COMPUTE_RESULT) {
-
-			var resultInt = conditionFunction.execute(behaviourTreeInstanceState);
-
-			behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_WAITING, this);
-
-			for (var j = 0; j < actionArray.length; j++) {
-				if (j == resultInt)
-					behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_TO_BE_STARTED, actionArray[j]);
-				else
-					behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_DISCARDED, actionArray[j]);
-			}
-
+		//			In both cases Sync and Async
+		var resultInt;
+		if(this.conditionFunction instanceof IfNode){
+			resultInt = this.conditionFunction.execute(behaviourTreeInstanceState);
 		} else {
-			conditionFunction.execute(behaviourTreeInstanceState);
+			resultInt = this.conditionFunction(behaviourTreeInstanceState);
 		}
+
+		if(state == BehaviourTreeInstance.STATE_EXECUTING)
+			return;
+
+		for (var j = 0; j < this.actionArray.length; j++) {
+			if (j == resultInt)
+				behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_TO_BE_STARTED, this.actionArray[j]);
+			else
+				behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_DISCARDED, this.actionArray[j]);
+		}
+
 	};
 
 	this.children = function () {

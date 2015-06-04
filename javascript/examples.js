@@ -199,7 +199,7 @@ function example() {
 
 	var patrollingPoliceBehaviourTreeMultiResults =
 			new SelectorArrayNode(
-					new ActionNode(PolicemanManager.ifChaseGotKidCases),
+					new IfNode(PolicemanManager.ifChaseGotKidCases),
 					[
 						new ActionNode(PolicemanManager.actionBringChildToStation),
 						new SequencerNode([new ActionNode(PolicemanManager.actionWanderAround), new ActionNode(PolicemanManager.actionSmoke)]),
@@ -221,7 +221,6 @@ function example() {
 			new SequencerRandomNode([new ActionNode(PolicemanManager.actionWanderAround), new ActionNode(PolicemanManager.actionSmoke)]);
 	// Behaviour Tree Instance END
 
-
 	/**
 	 * Now that we have a couple of behaviour trees, all it takes is to create characters (NPCs)
 	 * and get them acting on a certain behaviour tree instance.
@@ -231,7 +230,7 @@ function example() {
 	policeman1.haveBeenChasing = 0;
 
 //	var bti1 = new BehaviourTreeInstance(patrollingPoliceBehaviourSimpleTreeTwoResults,policeman1,1);
-	var bti1 = new BehaviourTreeInstance(patrollingPoliceBehaviourTreeTwoResults, policeman1, 1);
+	var bti1 = new BehaviourTreeInstance(patrollingPoliceBehaviourTreeMultiResults, policeman1, 1);
 
 	tick(bti1);
 
@@ -249,9 +248,14 @@ function example() {
  * This is what makes all your behaviour trees instances run. (implement your own tick)
  */
 function tick(behaviourTreeInstance) {
-	setInterval(function () {
+	var tick = setInterval(function () {
 		behaviourTreeInstance.executeBehaviourTree();
-	}, 1000);
+
+		if(behaviourTreeInstance.finished){
+			writeOnConsole(behaviourTreeInstance.actor.name + " has finished.");
+			clearTimeout(tick);
+		}
+				}, 100);
 }
 
 

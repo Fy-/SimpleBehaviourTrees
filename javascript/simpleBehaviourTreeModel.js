@@ -111,21 +111,16 @@ function BehaviourTreeInstance(behaviourTree, actor, numberOfLoops) {
 		}
 
 		var state = this.findStateForNode(this.currentNode);
-		//console.debug("state", state);
-
+		
 		if (state == null || state == BehaviourTreeInstance.STATE_TO_BE_STARTED) {
 
-			//if (!this.currentNode.isConditional())
-
-			//first call to execute: may go into:
-			// STATE_WAITING (asynch,
-			// STATE_COMPUTE_RESULT (perform on second call) or
-			// STATE_COMPLETED
-//			this.currentNode.execute(this);
+			//first call to execute
+			//if the node is async, this will be the first of a two part call
 			var result = this.currentNode.execute(this);
 
 			var afterState = this.findStateForNode(this.currentNode);
 
+			//if the node is async, it will set the state to STATE_EXECUTING
 			if (afterState == null || afterState == BehaviourTreeInstance.STATE_TO_BE_STARTED){
 				this.setState(BehaviourTreeInstance.STATE_COMPLETED);
 			}
@@ -133,6 +128,8 @@ function BehaviourTreeInstance(behaviourTree, actor, numberOfLoops) {
 			return result;
 		}
 
+		//this is the case we have to call the second execute
+		//on the async node, which will bring it compute the final result and end
 		if (state == BehaviourTreeInstance.STATE_COMPUTE_RESULT) {
 
 			var result = this.currentNode.execute(this);
@@ -143,6 +140,10 @@ function BehaviourTreeInstance(behaviourTree, actor, numberOfLoops) {
 
 	};
 
+	// This is a recursive function, does a lot of work in few lines of code.
+	// Finds in the behaviour tree instance the currend node that is either to be
+	// executed or is executing (async). Also marks all parent nodes completed
+	// when necessary.
 	this.findCurrentNode = function(node) {
 
 		var state = this.findStateForNode(node);
@@ -175,7 +176,6 @@ function BehaviourTreeInstance(behaviourTree, actor, numberOfLoops) {
 
 			if (state == BehaviourTreeInstance.STATE_WAITING) {
 				this.setState(BehaviourTreeInstance.STATE_COMPLETED, node);
-				//				console.debug("setting to completed ", node);
 			}
 		}
 
@@ -215,11 +215,10 @@ function ActionNode(action) {
 // Action model and implementation - END
 
 
-// Action model and implementation - BEGIN
+// IfNode model and implementation - BEGIN
 /**
- * This simply creates a wrapper node for any specific action.
- * The wrapper is necessary in order to have a uniform "execute"
- * method to be called by the engine.
+ * This node is required on Selector nodes that are ruled by a logic.
+ * You may also omit it and pass directly the method, will work anyway.
  */
 function IfNode(action) {
 	this.action = action;
@@ -275,11 +274,9 @@ function SelectorNode(conditionFunction, actionIfTrue, actionIfFalse) {
 			return;
 
 		if (result) {
-			console.debug("case TRUE", result)
 			behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_TO_BE_STARTED, this.actionIfTrue);
 			behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_DISCARDED, this.actionIfFalse);
 		} else {
-			console.debug("case FALSE", result)
 			behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_TO_BE_STARTED, this.actionIfFalse);
 			behaviourTreeInstanceState.setState(BehaviourTreeInstance.STATE_DISCARDED, this.actionIfTrue);
 		}

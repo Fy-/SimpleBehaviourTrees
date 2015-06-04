@@ -32,7 +32,7 @@ public class PoliceManager : MonoBehaviour
     }
     else if (instance.HasToComplete())
     {
-      bool b = Random.Range(0f, 1f) > 10.01;
+      bool b = Random.Range(0f, 1f) > 0.01;
       Debug.Log(instance.actor.Name + ": " + " got child: " + b);
       return new ExecutionResult(b);
 
@@ -102,7 +102,7 @@ public class PoliceManager : MonoBehaviour
         // You will have to use a different one in different contexts.
         StartCoroutine(DoNap(instance, () =>
         {
-          Debug.Log("child in station");
+          Debug.Log("Completed: child in station");
           totalKidsWondering--;
         }));
       });

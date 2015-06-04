@@ -10,12 +10,12 @@ class UnitySampleTicker : MonoBehaviour
   float lastTickedOn;
   public PoliceManager pm;
 
-  
+
   void Start()
   {
     bti = Examples.Exemplify(pm);
   }
-  
+
   void Update()
   {
     if (Time.time - lastTickedOn > 1f)
@@ -23,8 +23,11 @@ class UnitySampleTicker : MonoBehaviour
       lastTickedOn = Time.time;
       bti.ExecuteBehaviourTree();
       if (bti.Completed)
+      {
         Debug.Log("BT END");
-      Debug.Log("ticked "+Time.time);
+        UnityEditor.EditorApplication.isPlaying = false;
+      }
+      //Debug.Log("ticked "+Time.time);
     }
   }
 }

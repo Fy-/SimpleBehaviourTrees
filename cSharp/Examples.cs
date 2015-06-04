@@ -12,7 +12,7 @@ public class Examples
   {
     Policeman p = new Policeman();
 
-    var patrollingPoliceBehaviourTreeTwoResults =
+    /*var patrollingPoliceBehaviourTreeTwoResults =
 
       new SelectorNode(
             pm.IfChaseGotKid,
@@ -20,13 +20,13 @@ public class Examples
             new SequencerNode(new BehaviourTreeNode[] {
                 new ActionNode(pm.ActionWander), new ActionNode(pm.ActionSmoke)
               })
-        );
+        );*/
 
     var patrollingPoliceBehaviourTreeTwoResultsSimple =
 
       new SelectorNode(
             pm.IfChaseGotKid,
-            new ActionNode(pm.ActionWander),
+            new ActionNode(pm.ActionBringChildToStation),
             new ActionNode(pm.ActionSmoke)
               );
 

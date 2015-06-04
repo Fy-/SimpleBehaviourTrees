@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using UnityEngine;
+using Debug = UnityEngine.Debug;
+
 
 public class BehaviourTreeInstance
 {
@@ -16,7 +19,7 @@ public class BehaviourTreeInstance
     STATE_COMPLETED
   };
 
-  private BehaviourTreeNode node;
+  private BehaviourTreeNode rootNode;
   public Actor actor;
   private int numberOfLoops;
   private int numberOfRuns = 0;
@@ -27,41 +30,43 @@ public class BehaviourTreeInstance
 
   private BehaviourTreeNode currentNode = null;
 
-  public BehaviourTreeInstance(BehaviourTreeNode node, Actor actor, int numberOfLoops)
+  public BehaviourTreeInstance(BehaviourTreeNode rootNode, Actor actor, int numberOfLoops)
   {
-    this.node = node;
+    this.rootNode = rootNode;
+    this.currentNode = rootNode;
     this.actor = actor;
     this.numberOfLoops = numberOfLoops;
   }
 
   public bool HasToStart()
   {
-    NodeState state = NodeAndState[node];
+    NodeState state = NodeAndState[currentNode];
     return state != NodeState.STATE_EXECUTING && state != NodeState.STATE_COMPUTE_RESULT;
   }
 
   public bool HasToComplete()
   {
-    NodeState state = NodeAndState[node];
+    NodeState state = NodeAndState[rootNode];
     return state == NodeState.STATE_COMPUTE_RESULT;
   }
 
   public void CompletedAsync()
   {
-    if (this.currentNode.IsConditional())
+    if (currentNode.IsConditional())
     {
-      Debug.WriteLine("CompletedAsync for node "+node);
-      NodeAndState[node] = NodeState.STATE_COMPUTE_RESULT;
+      Debug.Log("CompletedAsync for conditional node "+currentNode);
+      NodeAndState[currentNode] = NodeState.STATE_COMPUTE_RESULT;
     }
     else
     {
-      NodeAndState[node] = NodeState.STATE_COMPLETED;
+      Debug.Log("CompletedAsync for not conditional node " + currentNode);
+      NodeAndState[currentNode] = NodeState.STATE_COMPLETED;
     }
   }
 
   public void WaitUntil(Action callback)
   {
-    NodeAndState[node] = NodeState.STATE_EXECUTING;
+    NodeAndState[currentNode] = NodeState.STATE_EXECUTING;
     callback();
    }
 
@@ -73,7 +78,7 @@ public class BehaviourTreeInstance
     }
 
     //find current node to be executed, or a running one, or root to launch, or root completed
-    currentNode = FindCurrentNode(node);
+    currentNode = FindCurrentNode(rootNode);
 
     if (currentNode == null)
     {
@@ -81,7 +86,7 @@ public class BehaviourTreeInstance
       if (numberOfLoops == 0 || numberOfRuns < numberOfLoops)
       {
         NodeAndState = new Dictionary<BehaviourTreeNode, NodeState>();
-        currentNode = FindCurrentNode(node);
+        currentNode = FindCurrentNode(rootNode);
        }
       else
       {

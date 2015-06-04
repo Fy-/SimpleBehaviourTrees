@@ -2,18 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 
-public class SelectorWeightedRandomArrayNode : BehaviourTreeNode
+public class SelectorProbabilityRandomArrayNode : BehaviourTreeNode
 {
-  /// <summary>
-  /// Here the sum of likelihoods must be one - don't cheat
-  /// Example:
-  /// Lazy around .7
-  /// Pretend to work .2
-  /// Actually work .1
-  /// </summary>
-  private Dictionary<BehaviourTreeNode, float> actionArrayAndLikelihood;
+ 
+  private Dictionary<BehaviourTreeNode, int> actionArrayAndLikelihood;
 
-  public SelectorWeightedRandomArrayNode(Dictionary<BehaviourTreeNode,float> actionArrayAndLikelihood)
+  public SelectorProbabilityRandomArrayNode(Dictionary<BehaviourTreeNode, int> actionArrayAndLikelihood)
   {
     this.actionArrayAndLikelihood = actionArrayAndLikelihood;
   }
@@ -27,7 +21,7 @@ public class SelectorWeightedRandomArrayNode : BehaviourTreeNode
 
     if (state == BehaviourTreeInstance.NodeState.STATE_COMPUTE_RESULT)
     {
-      BehaviourTreeNode picked = ChooseByRandom(actionArrayAndLikelihood);
+      BehaviourTreeNode picked = ChooseByProbability(actionArrayAndLikelihood);
 
       behaviourTreeInstance.NodeAndState[this] = BehaviourTreeInstance.NodeState.STATE_WAITING;
       behaviourTreeInstance.NodeAndState[picked] = BehaviourTreeInstance.NodeState.STATE_TO_BE_STARTED;
@@ -41,6 +35,25 @@ public class SelectorWeightedRandomArrayNode : BehaviourTreeNode
     return new ExecutionResult(true);
   }
 
+  public static BehaviourTreeNode ChooseByProbability(
+    Dictionary<BehaviourTreeNode, int> actionArrayAndLikelihood)
+  {
+    Dictionary<BehaviourTreeNode, float> collection = new Dictionary<BehaviourTreeNode, float>();
+
+	var totalPoints = 0;
+	foreach (int point in actionArrayAndLikelihood.Values){
+		totalPoints += point;
+	}
+
+	var unit = 1/totalPoints;
+
+	foreach (var item in actionArrayAndLikelihood){
+    collection.Add(item.Key, item.Value * unit);
+	}
+
+	return SelectorWeightedRandomArrayNode.ChooseByRandom(collection);
+}
+
  
   public bool IsConditional()
   {
@@ -52,22 +65,6 @@ public class SelectorWeightedRandomArrayNode : BehaviourTreeNode
     return actionArrayAndLikelihood.Keys.ToList();
   }
 
-  /// <summary>
-  /// From http://stackoverflow.com/questions/3655430/selection-based-on-percentage-weighting
-  /// </summary>
-  static Random random = new Random();
-  public static BehaviourTreeNode ChooseByRandom(
-        Dictionary<BehaviourTreeNode, float> collection)
-  {
-    var rnd = random.NextDouble();
-    foreach (var item in collection)
-    {
-      if (rnd < item.Value)
-        return item.Key;
-      rnd -= item.Value;
-    }
-    throw new InvalidOperationException(
-        "The proportions in the collection do not add up to 1.");
-  }
+  
 
 }

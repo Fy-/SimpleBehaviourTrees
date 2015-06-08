@@ -34,7 +34,7 @@ public class PoliceManager : MonoBehaviour
     else if (instance.HasToComplete())
     {
       bool b = Random.Range(0f, 1f) > 0.49;
-      Debug.Log(instance.actor.Name + ": " + " got child: " + b);
+      Debug.Log(instance.Actor.Name() + ": " + " got child: " + b);
       return new ExecutionResult(b);
     }
     else
@@ -80,7 +80,7 @@ public class PoliceManager : MonoBehaviour
     {
       var random = Random.Range(0f, 1f);
       var b = random > 0.6 ? 2 : (random > 0.3 ? 1 : 0);
-      Debug.Log(instance.actor.Name + ": " + " got child: " + b);
+      Debug.Log(instance.Actor.Name() + ": " + " got child: " + b);
       return new ExecutionResult(b);
     }
     else
@@ -94,7 +94,7 @@ public class PoliceManager : MonoBehaviour
   {
     if (instance.HasToStart())
     {
-      Debug.Log(instance.actor.Name + ": " + "Bring child to station");
+      Debug.Log(instance.Actor.Name() + ": " + "Bring child to station");
 
       instance.WaitUntil(() =>
       {
@@ -113,19 +113,19 @@ public class PoliceManager : MonoBehaviour
   public ExecutionResult ActionBringChildHome(BehaviourTreeInstance instance)
   {
     totalKidsWondering--;
-    Debug.Log(instance.actor.Name + ": " + "Bring child home");
+    Debug.Log(instance.Actor.Name() + ": " + "Bring child home");
     return new ExecutionResult(true);
   }
 
   public ExecutionResult ActionSmoke(BehaviourTreeInstance instance)
   {
-    Debug.Log(instance.actor.Name + ": " + "Smoke");
+    Debug.Log(instance.Actor.Name() + ": " + "Smoke");
     return new ExecutionResult(true);
   }
 
   public ExecutionResult ActionWander(BehaviourTreeInstance instance)
   {
-    Debug.Log(instance.actor.Name + ": " + "Wander around");
+    Debug.Log(instance.Actor.Name() + ": " + "Wander around");
     return new ExecutionResult(true);
   }
 

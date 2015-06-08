@@ -5,9 +5,9 @@ using System.Text;
 
 namespace SimpleBehaviourTrees
 {
-  public class Actor
+  public interface Actor
   {
-    public string Name;
+    string Name();
   }
 }
 

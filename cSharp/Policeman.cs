@@ -9,6 +9,12 @@ using Random = UnityEngine.Random;
 class Policeman : Actor
 {
   private bool actionCompleted = true;
+  private string name;
+
+  public Policeman(string name)
+  {
+    this.name = name;
+  }
 
   public bool IsCriminalInSight()
   {
@@ -57,6 +63,11 @@ class Policeman : Actor
   public bool ActionCompleted()
   {
     return actionCompleted;
+  }
+
+  public string Name()
+  {
+    return name;
   }
 }
 

@@ -10,7 +10,7 @@ public class Examples
 
   public static BehaviourTreeInstance Exemplify(PoliceManager pm)
   {
-    Policeman p = new Policeman();
+    Policeman p = new Policeman("Bobby");
 
     var patrollingPoliceBehaviourTreeTwoResults =
 

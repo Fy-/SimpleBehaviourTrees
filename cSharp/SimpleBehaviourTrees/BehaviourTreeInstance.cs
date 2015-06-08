@@ -21,7 +21,7 @@ namespace SimpleBehaviourTrees
     };
 
     private BehaviourTreeNode rootNode;
-    public Actor actor;
+    public Actor Actor;
     private int numberOfLoops;
     private int numberOfRuns = 0;
     public bool Completed = false;
@@ -35,7 +35,7 @@ namespace SimpleBehaviourTrees
     {
       this.rootNode = rootNode;
       this.currentNode = rootNode;
-      this.actor = actor;
+      this.Actor = actor;
       this.numberOfLoops = numberOfLoops;
     }
 

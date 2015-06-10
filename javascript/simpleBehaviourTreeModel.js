@@ -136,8 +136,6 @@ function BehaviourTreeInstance(behaviourTree, actor, numberOfLoops) {
 			this.setState(BehaviourTreeInstance.STATE_COMPLETED);
 			return result;
 		}
-
-
 	};
 
 	// This is a recursive function, does a lot of work in few lines of code.

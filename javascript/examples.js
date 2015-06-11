@@ -151,16 +151,6 @@ function example() {
 	 * Here are several examples of behaviour tree definitions. You can create your own.
 	 */
 
-/*
-	var patrollingPoliceBehaviourTreeTwoResults =
-
-			new SelectorNode(
-					PolicemanManager.ifKidInSight,
-					new ActionNode(PolicemanManager.actionSmoke),
-					new ActionNode(PolicemanManager.actionWanderAround)
-			);
-*/
-
 	var patrollingPoliceBehaviourTreeTwoResults =
 			(new SelectorNode(
 					PolicemanManager.ifKidInSight,
@@ -173,11 +163,9 @@ function example() {
 			));
 
 	var patrollingPoliceBehaviourSimpleTreeTwoResults =
-			(new
-					SelectorNode(
-					new ActionNode(PolicemanManager.ifKidInSight),
+			(new SelectorNode(
+					PolicemanManager.ifKidInSight,
 					new ActionNode(PolicemanManager.actionWanderAround),
-
 					new ActionNode(PolicemanManager.actionSmoke)
 			));
 
@@ -228,16 +216,13 @@ function example() {
 	policeman1.name = "Bobby";
 	policeman1.haveBeenChasing = 0;
 
-//	var bti1 = new BehaviourTreeInstance(patrollingPoliceBehaviourSimpleTreeTwoResults,policeman1,1);
 	var bti1 = new BehaviourTreeInstance(patrollingPoliceBehaviourTreeMultiResults, policeman1, 1);
-
 	tick(bti1);
 
-	/*	var policeman2 = {};
+	//you can have several instances of course
+	/*var policeman2 = {};
 	 policeman2.name = "Jimmy";
 	 var bti2 = new BehaviourTreeInstance(patrollingPoliceBehaviourTreeTwoResults,policeman2,1);
-
-
 	 tick(bti2);*/
 
 }

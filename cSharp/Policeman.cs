@@ -3,11 +3,18 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using SimpleBehaviourTrees;
 using Random = UnityEngine.Random;
 
 class Policeman : Actor
 {
   private bool actionCompleted = true;
+  private string name;
+
+  public Policeman(string name)
+  {
+    this.name = name;
+  }
 
   public bool IsCriminalInSight()
   {
@@ -56,6 +63,11 @@ class Policeman : Actor
   public bool ActionCompleted()
   {
     return actionCompleted;
+  }
+
+  public string Name()
+  {
+    return name;
   }
 }
 

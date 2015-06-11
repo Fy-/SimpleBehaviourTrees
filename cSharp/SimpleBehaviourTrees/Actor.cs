@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-  public class Actor
+namespace SimpleBehaviourTrees
+{
+  public interface Actor
   {
-    public string Name;
+    string Name();
   }
+}
 

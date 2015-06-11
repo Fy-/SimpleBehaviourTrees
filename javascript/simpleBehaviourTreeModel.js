@@ -221,7 +221,7 @@ function ActionNode(action) {
  * The wrapper is necessary in order to have a uniform "execute"
  * method to be called by the engine.
  */
-function IfNode(action) {
+function ActionNode(action) {
 	this.action = action;
 
 	this.execute = function (behaviourTreeInstanceState) {

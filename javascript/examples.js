@@ -207,7 +207,6 @@ function example() {
 					]
 			);
 
-
 	var patrollingPoliceBehaviourTreeRandomResults =
 			new SelectorRandomNode(
 					[
